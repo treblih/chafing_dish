@@ -19,6 +19,10 @@
 #include 	<form.h>
 #include 	<stdlib.h>
 #include	"ui.h"
+#include	"glue.h"
+
+int bill();
+int check();
 
 
 static char *choices[] = {
@@ -107,6 +111,7 @@ int bill()
 }
 int check()
 {
-
+	int date = get_date_time(GET_DATE);
+	char *bill_list = get_today_bill(date, USER);
 	return 0;
 }

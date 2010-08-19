@@ -27,7 +27,7 @@ static FUNCP func_p[] = {
 };
 
 
-int main()
+int ui_init()
 {
         setlocale(LC_ALL, "zh_CN.UTF-8");
         int c;

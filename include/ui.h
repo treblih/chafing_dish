@@ -54,6 +54,7 @@ extern	int manage();
 extern	int practice();
 extern	int logout();
 
+extern	int ui_init();
 extern	int ncurses_init();
 extern	WINDOW *get_w_status();
 extern	WINDOW *get_w_notice();

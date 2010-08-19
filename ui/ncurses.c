@@ -1,4 +1,3 @@
-#include	<menu.h>
 #include	<stdlib.h>
 #include	<locale.h>
 #include	"ui.h"
@@ -28,25 +27,23 @@ static FUNCP func_p[] = {
 };
 
 
-int main() {
+int main()
+{
         setlocale(LC_ALL, "zh_CN.UTF-8");
-        initscr();
-        noecho();
-        start_color();
-        init_pair(1, COLOR_WHITE, COLOR_BLUE);
-        curs_set(0);
-        refresh();
+        int c;
+	ncurses_init();
 
-
-        WINDOW *w_menu = newwin(LINES - 3, 15, 0, 0);
+        WINDOW *w_menu = newwin(MAIN_YS,
+			        MAIN_XS,
+				MAIN_Y,
+				MAIN_X);
+	WINDOW *w_notice = get_w_notice();
+	WINDOW *w_status = get_w_status();
         keypad(w_menu, TRUE);
-	/* WINDOW *w_status = get_w_status(); */
-	WINDOW *w_status = newwin(1, COLS, LINES - 3, 0);
-		wbkgd(w_status, COLOR_PAIR(1));
-		wrefresh(w_status);
 
         int choices_n = ARRAY_SIZE(choices);
-        ITEM **menu_items = (ITEM **)malloc(choices_n * sizeof(ITEM *));
+        /* ITEM **menu_items = (ITEM **)malloc(choices_n * sizeof(ITEM *)); */
+        ITEM **menu_items = (ITEM **)calloc(10, sizeof(ITEM *));
         for (int i = 0; i < choices_n; ++i) {
                 menu_items[i] = new_item(choices[i], choices_desc[i]);
 		set_item_userptr(menu_items[i], func_p[i]);
@@ -62,7 +59,7 @@ int main() {
 
         /* Set main window and sub window */
         set_menu_win(menu, w_menu);
-        set_menu_sub(menu, derwin(w_menu, 10, 15, 5, 1));
+        set_menu_sub(menu, derwin(w_menu, 0, 0, 10, 0));
         set_menu_format(menu, 5, 1);
         set_menu_mark(menu, " * ");
 
@@ -70,32 +67,25 @@ int main() {
         post_menu(menu);
         wrefresh(w_menu);
 
-        /* WINDOW * w_notice = newwin(2, COLS, LINES - 2, 0); */
-        /* box(w_menu, 0, 0); */
-        /* wrefresh(w_notice); */
-
-        int c;
-
-main_menu:
         while (c = wgetch(w_menu)) {
                 switch (c) {
                         case KEY_DOWN:
 				menu_driver(menu, REQ_DOWN_ITEM);
-				werase(w_status);
-                                wprintw(w_status, "%s",
+				werase(w_notice);
+                                wprintw(w_notice, "%s",
 					item_description(
 						current_item(menu)));
 				pos_menu_cursor(menu);
-				wrefresh(w_status);
+				wrefresh(w_notice);
 				break;
                         case KEY_UP:
                                 menu_driver(menu, REQ_UP_ITEM);
-				werase(w_status);
-                                wprintw(w_status, "%s",
+				werase(w_notice);
+                                wprintw(w_notice, "%s",
 					item_description(
 						current_item(menu)));
 				pos_menu_cursor(menu);
-				wrefresh(w_status);
+				wrefresh(w_notice);
                                 break;
 			case 10: /* Enter */
 			{
@@ -123,10 +113,12 @@ exit:
         return 0;
 }
 
+#if 0
 int transact()
 {
 	return 0;
 }
+#endif
 int manage()
 {
 	return 0;
@@ -135,22 +127,18 @@ int practice()
 {
 	return 0;
 }
-
 int logout()
 {
 	return 1;
 }
 
-
-#if 0
-WINDOW *get_w_status()
+int ncurses_init()
 {
-	static WINDOW *w_status;
-	if (!w_status) {
-		w_status = newwin(1, COLS, LINES - 3, 0);
-		wbkgd(w_status, COLOR_PAIR(1));
-		wrefresh(w_status);
-	}
-	return w_status;
+        initscr();
+        noecho();
+        start_color();
+        init_pair(1, COLOR_WHITE, COLOR_BLUE);
+        curs_set(0);
+        refresh();
+	return 0;
 }
-#endif

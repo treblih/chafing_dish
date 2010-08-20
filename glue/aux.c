@@ -28,10 +28,11 @@ static int sql_item_cnt;
  *  Description:  date changes 1 time per day, so make it long live
  * =====================================================================================
  */
-int get_date_time(int req)
+char *get_date_time(int req)
 {
-	static int date;
-	if (req == GET_DATE && date) {
+	static char date[11];	/* 10 + '\0' */
+	static char hm[6];	/* 5 + '\0' */
+	if (req == GET_DATE && *date) {		/* date will always be true, *date */
 		return date;
 	}
 
@@ -42,27 +43,34 @@ int get_date_time(int req)
 	struct tm *p; 
 	time(&timep); 
 	p = gmtime(&timep); 
-	date = (p->tm_year - 100) * 10000 + (1 + p->tm_mon) * 100 + p->tm_mday;
+
 	if (req == GET_DATE) {
+		sprintf(date, "%d/%.2d/%.2d",
+			p->tm_year + 1900,
+			p->tm_mon + 1,
+			p->tm_mday);
 		return date;
 	}
-	return p->tm_hour * 100 + p->tm_min;
+	sprintf(hm, "%.2d:%.2d",
+		p->tm_hour,
+		p->tm_min);
+	return hm;
 }
 
-char **get_bill_list(int date, int privilege)
+char **get_bill_list(char *date, int privilege)
 {
 	char sql[100];
 	if (privilege == USER) {
-		sprintf(sql, "select time, sales from bill where date = %d", 
+		sprintf(sql, "select time, sales from bill where date = '%s'", 
 			date);
 		return db_select(get_db_main(), sql, 2,
-				 SELECT_INT,
+				 SELECT_TEXT,
 				 SELECT_DOUBLE);
 	}
-	sprintf(sql, "select time, sales, cost, profil from bill where date = %d", 
+	sprintf(sql, "select time, sales, cost, profil from bill where date = '%s'", 
 		date);
 	return db_select(get_db_main(), sql, 4,
-			 SELECT_INT,
+			 SELECT_TEXT,
 			 SELECT_DOUBLE,
 			 SELECT_DOUBLE,
 			 SELECT_DOUBLE);

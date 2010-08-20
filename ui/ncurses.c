@@ -143,6 +143,7 @@ int ncurses_init()
 {
         initscr();
         noecho();
+	cbreak();
         start_color();
         init_pair(1, COLOR_WHITE, COLOR_BLUE);
         curs_set(0);

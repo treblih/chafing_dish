@@ -1,61 +1,55 @@
 /*
  * =====================================================================================
  *
- *       Filename:  db.c
+ *       filename:  a.c
  *
- *    Description:
+ *    description:  gj
  *
- *        Created:  20.08.10
- *       Revision:
- *       Compiler:  GCC 4.4
+ *        created:  27.05.10
+ *       revision:  
+ *       compiler:  gcc 4.4
  *
- *         Author:  Yang Zhang, treblih.divad@gmail.com
- *        Company:
+ *         author:  yang zhang, treblih.divad@gmail.com
+ *        company:  
  *
  * =====================================================================================
  */
 
-#include	"db.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include	<locale.h>
+#include	<sqlite3.h>
+#include	<time.h>
+#include	"ui.h"
 #include	"glue.h"
+#include	"db.h"
 
-static int init(const char *, sqlite3 **);
-static char **bulk_space(int);
-static char **bulk_expand(char **, int);
-
-static sqlite3 *handle_main;
-static sqlite3 *handle_daily;
-
-sqlite3 *get_db_main()
+static char **bulk_space(int cnt)
 {
-	if (!handle_main) {
-		init("chafing.db", &handle_main);
+	/* bulk */
+	char **res = calloc(cnt, ITEM_SIZE);
+	int str_start = (int)((char *)res + str_offset(cnt));
+	int str_addr = str_start;
+
+	/* retail */
+	for (int i = 0; i < cnt; ++i) {
+		res[i] = (char *)str_addr;
+		str_addr += STR_LEN;
 	}
-	return handle_main;
+	return res;
 }
 
-void close_db_main()
+static char **bulk_expand(char **res, int cnt)
 {
-	sqlite3_close(handle_main);
+	int ptrs = str_offset(cnt);
+	char **res_large = bulk_space(cnt + ITEM_NUM);
+	memcpy(res_large, res, ptrs);
+	memcpy((char *)res_large + str_offset(cnt + ITEM_NUM), 
+	       (char *)res       + ptrs, 
+	        cnt * STR_LEN);
+	return res_large;
 }
-
-static int init(const char *filename, sqlite3 **addr)
-{
-        if (sqlite3_open(filename, addr)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(*addr));
-                return EXIT_FAILURE;
-        }
-        return EXIT_SUCCESS;
-}
-
-
-/* 
- * ===  FUNCTION  ======================================================================
- *         Name:  db_select
- *  Description:  save all results in a format string
- *  		  allocates 4k bytes by default
- *  		  when done, remember to FREE
- * =====================================================================================
- */
 char **db_select(sqlite3 *handle, char *sql, int col, ...)
 {
 	/*-----------------------------------------------------------------------------
@@ -83,6 +77,7 @@ char **db_select(sqlite3 *handle, char *sql, int col, ...)
 	 *  convert sql results to string
 	 *  if more than ITEM_NUM, double the array, then loop
 	 *-----------------------------------------------------------------------------*/
+	fprintf(stderr, "db_select here");
 sql2str:
 	for (; sqlite3_step(stmt) != SQLITE_DONE && i < acc_num; ++i) {
         	va_start(type, col);
@@ -106,6 +101,7 @@ sql2str:
 				fprintf(stderr, "unknown sql type\n");
 				break;
 			}
+			fprintf(stderr, "%s\n", tmp);
 			total += cnt;
 			tmp += cnt;
                 }
@@ -130,7 +126,6 @@ sql2str:
 		acc_num += ITEM_NUM;
 		goto sql2str;
 	}
-	set_sql_item_cnt(i);		/* significant */
 
         if (sqlite3_finalize(stmt)) {
                 fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
@@ -139,29 +134,15 @@ sql2str:
         va_end(type);
         return res;
 }
-
-static char **bulk_space(int cnt)
+int main()
 {
-	/* bulk */
-	char **res = calloc(cnt, ITEM_SIZE);
-	int str_start = (int)((char *)res + str_offset(cnt));
-	int str_addr = str_start;
-
-	/* retail */
-	for (int i = 0; i < cnt; ++i) {
-		res[i] = (char *)str_addr;
-		str_addr += STR_LEN;
-	}
-	return res;
-}
-
-static char **bulk_expand(char **res, int cnt)
-{
-	int ptrs = str_offset(cnt);
-	char **res_large = bulk_space(cnt + ITEM_NUM);
-	memcpy(res_large, res, ptrs);
-	memcpy((char *)res_large + str_offset(cnt + ITEM_NUM), 
-	       (char *)res       + ptrs, 
-	        cnt * STR_LEN);
-	return res_large;
+	char *sql = "select time, cost from bill where date = '2010/08/20'";
+	sqlite3 *handle;
+	sqlite3_stmt *stmt;
+	sqlite3_open("chafing.db", &handle);
+	char **res = db_select(handle, sql, 2, SELECT_TEXT, SELECT_DOUBLE);
+	printf("%s\n", res[0]);
+	printf("%s\n", res[1]);
+	printf("%s\n", res[2]);
+	return 0;
 }

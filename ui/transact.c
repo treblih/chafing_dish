@@ -112,10 +112,9 @@ static int collect_money()
 }
 static int get_today_bill()
 {
-	int date = get_date_time(GET_DATE);
+	char *date = get_date_time(GET_DATE);
 	char **bill_list = get_bill_list(date, USER);
-
-	MENU *menu = menu_generator(bill_list, get_sql_item_cnt(), 3);
+	MENU *menu = menu_generator(bill_list, get_sql_item_cnt(), 1);
 	WINDOW *w_display = get_w_display();
 	WINDOW *w_notice = get_w_notice();
 
@@ -124,20 +123,18 @@ static int get_today_bill()
         	switch (c) {
                         case KEY_DOWN:
 				menu_driver(menu, REQ_DOWN_ITEM);
-				werase(w_notice);
-                                wprintw(w_notice, "%s",
-					item_description(
-						current_item(menu)));
-				pos_menu_cursor(menu);
 				wrefresh(w_notice);
 				break;
                         case KEY_UP:
                                 menu_driver(menu, REQ_UP_ITEM);
-				werase(w_notice);
-                                wprintw(w_notice, "%s",
-					item_description(
-						current_item(menu)));
-				pos_menu_cursor(menu);
+				wrefresh(w_notice);
+                                break;
+                        case KEY_LEFT:
+                                menu_driver(menu, REQ_LEFT_ITEM);
+				wrefresh(w_notice);
+                                break;
+                        case KEY_RIGHT:
+                                menu_driver(menu, REQ_RIGHT_ITEM);
 				wrefresh(w_notice);
                                 break;
 			case 10: /* Enter */

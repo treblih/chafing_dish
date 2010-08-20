@@ -18,6 +18,10 @@
 #include	"glue.h"
 #include	"db.h"
 
+
+static int sql_item_cnt;
+
+
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  get_date_time
@@ -45,21 +49,36 @@ int get_date_time(int req)
 	return p->tm_hour * 100 + p->tm_min;
 }
 
-char **get_today_bill(int date, int privilege)
+char **get_bill_list(int date, int privilege)
 {
-	char *sql;
+	char sql[100];
 	if (privilege == USER) {
-		sql = "select time, sales from bill where date = %d";
-		sprintf(sql, date);
-		return db_select(sql, 2,
+		sprintf(sql, "select time, sales from bill where date = %d", 
+			date);
+		return db_select(get_db_main(), sql, 2,
 				 SELECT_INT,
 				 SELECT_DOUBLE);
 	}
-	sql = "select time, sales, cost, profil from bill where date = %d";
-	sprintf(sql, date);
-	return db_select(sql, 4,
+	sprintf(sql, "select time, sales, cost, profil from bill where date = %d", 
+		date);
+	return db_select(get_db_main(), sql, 4,
 			 SELECT_INT,
 			 SELECT_DOUBLE,
 			 SELECT_DOUBLE,
 			 SELECT_DOUBLE);
+}
+
+void free_bill_list(char **res)
+{
+	free(res);
+}
+
+void set_sql_item_cnt(int n)
+{
+	sql_item_cnt = n;
+}
+
+int get_sql_item_cnt()
+{
+	return sql_item_cnt;
 }

@@ -25,9 +25,13 @@
 #define		GET_TIME	1
 extern 	int get_date_time(int);
 
-	/* for get_today_bill */
+	/* for get_bill_list */
 #define		ADMIN		0
 #define		USER		1
-extern	char **get_today_bill(int, int);
+extern	char **get_bill_list(int, int);
+
+extern	void free_bill_list(char **);
+extern	void set_sql_item_cnt(int);
+extern	int  get_sql_item_cnt();
 
 #endif

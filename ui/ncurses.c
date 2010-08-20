@@ -7,6 +7,7 @@ static char *choices[] = {
         "收银",
         "吴哥管理",
         "无痛练习",
+	"发送BUG报告",
         "退出",
         (char *) NULL
 };
@@ -15,6 +16,7 @@ static char *choices_desc[] = {
         "结帐/查询今日记录",
         "数据查询/分析/管理，需要管理员权限",
         "依据现有数据练习软件操作，结果不会更新进数据库",
+	"自动发送记录系统错误文件",
         "退出",
         (char *) NULL
 };
@@ -23,6 +25,7 @@ static FUNCP func_p[] = {
 	transact,
 	manage,
 	practice,
+	bug_report,
 	logout
 };
 
@@ -60,7 +63,7 @@ int ui_init()
         /* Set main window and sub window */
         set_menu_win(menu, w_menu);
         set_menu_sub(menu, derwin(w_menu, 0, 0, 10, 0));
-        set_menu_format(menu, 5, 1);
+        set_menu_format(menu, 10, 1);
         set_menu_mark(menu, " * ");
 
         /* Post the menu */
@@ -127,6 +130,10 @@ int practice()
 {
 	return 0;
 }
+int bug_report()
+{
+	return 0;
+}
 int logout()
 {
 	return 1;
@@ -141,4 +148,29 @@ int ncurses_init()
         curs_set(0);
         refresh();
 	return 0;
+}
+
+MENU *menu_generator(char **res, int cnt, int cols)
+{
+	WINDOW *w_display = get_w_display();
+        ITEM **menu_items = (ITEM **)calloc(cnt + 1, sizeof(ITEM *));
+        for (int i = 0; i < cnt; ++i) {
+                menu_items[i] = new_item(res[i], NULL);
+		set_item_userptr(menu_items[i], bill_detail);
+        }
+
+        MENU *menu = new_menu((ITEM **)menu_items);
+        menu_opts_off(menu, O_SHOWDESC);
+        set_menu_win(menu, w_display);
+        set_menu_sub(menu, derwin(w_display, 0, 0, 10, 0));
+        set_menu_format(menu, 10, cols);
+        post_menu(menu);
+        wrefresh(w_display);
+	return menu;
+}
+
+void bill_detail()
+{
+	WINDOW *w_notice = get_w_notice();
+	wprintw(w_notice, "it's bill detail");
 }

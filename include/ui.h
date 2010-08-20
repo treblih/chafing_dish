@@ -42,9 +42,14 @@
 #define		STATUS_X	0
 
 #define		TRANSACT_YS	LINES - 3
-#define		TRANSACT_XS	15
+#define		TRANSACT_XS	MAIN_XS
 #define		TRANSACT_Y	0
-#define		TRANSACT_X	COLS - 15
+#define		TRANSACT_X	COLS - 16
+
+#define		DISPLAY_YS	LINES - 3
+#define		DISPLAY_XS	COLS - MAIN_XS - TRANSACT_XS - 4
+#define		DISPLAY_Y	0
+#define		DISPLAY_X	MAIN_XS + 2
 
 
 typedef int (*FUNCP)();
@@ -52,11 +57,16 @@ typedef int (*FUNCP)();
 extern	int transact();
 extern	int manage();
 extern	int practice();
+extern	int bug_report();
 extern	int logout();
 
 extern	int ui_init();
 extern	int ncurses_init();
 extern	WINDOW *get_w_status();
 extern	WINDOW *get_w_notice();
+extern	WINDOW *get_w_display();
+extern	MENU *menu_generator(char **, int, int);
+
+extern	void bill_detail();
 
 #endif

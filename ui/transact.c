@@ -21,8 +21,8 @@
 #include	"ui.h"
 #include	"glue.h"
 
-int bill();
-int check();
+static int collect_money();
+static int get_today_bill();
 
 
 static char *choices[] = {
@@ -38,8 +38,8 @@ static char *choices_desc[] = {
 };
 
 static FUNCP func_p[] = {
-	bill,
-	check
+	collect_money,
+	get_today_bill
 };
 
 int transact()
@@ -93,10 +93,11 @@ int transact()
 				pos_menu_cursor(menu);
 				wrefresh(w_notice);
                                 break;
-			case KEY_ENTER: /* Enter */
+			case 10: /* Enter */
 			{
 				FUNCP f = item_userptr(current_item(menu));
-				/* pos_menu_cursor(menu); */
+				f();
+				pos_menu_cursor(menu);
 				break;
 			}
                 }
@@ -105,13 +106,49 @@ int transact()
 	return GO_BACK;
 }
 
-int bill()
+static int collect_money()
 {
 	return 0;
 }
-int check()
+static int get_today_bill()
 {
 	int date = get_date_time(GET_DATE);
-	char *bill_list = get_today_bill(date, USER);
+	char **bill_list = get_bill_list(date, USER);
+
+	MENU *menu = menu_generator(bill_list, get_sql_item_cnt(), 3);
+	WINDOW *w_display = get_w_display();
+	WINDOW *w_notice = get_w_notice();
+
+	int c;
+	while ((c = wgetch(w_display)) != '/') {
+        	switch (c) {
+                        case KEY_DOWN:
+				menu_driver(menu, REQ_DOWN_ITEM);
+				werase(w_notice);
+                                wprintw(w_notice, "%s",
+					item_description(
+						current_item(menu)));
+				pos_menu_cursor(menu);
+				wrefresh(w_notice);
+				break;
+                        case KEY_UP:
+                                menu_driver(menu, REQ_UP_ITEM);
+				werase(w_notice);
+                                wprintw(w_notice, "%s",
+					item_description(
+						current_item(menu)));
+				pos_menu_cursor(menu);
+				wrefresh(w_notice);
+                                break;
+			case 10: /* Enter */
+			{
+				FUNCP f = item_userptr(current_item(menu));
+				f();
+				/* pos_menu_cursor(menu); */
+				break;
+			}
+                }
+        }
+	free_bill_list(bill_list);
 	return 0;
 }

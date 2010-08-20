@@ -16,17 +16,34 @@
  */
 
 #include	"db.h"
+#include	"glue.h"
 
+static int init(const char *, sqlite3 **);
 static char **bulk_space(int);
 static char **bulk_expand(char **, int);
 
-int db_init(const char *db_name, sqlite3 **handle_addr)
+static sqlite3 *handle_main;
+static sqlite3 *handle_daily;
+
+sqlite3 *get_db_main()
 {
-        if (sqlite3_open(db_name, handle_addr)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(*handle_addr));
+	if (!handle_main) {
+		init("chafing.db", &handle_main);
+	}
+	return handle_main;
+}
+
+void close_db_main()
+{
+	sqlite3_close(handle_main);
+}
+
+static int init(const char *filename, sqlite3 **addr)
+{
+        if (sqlite3_open(filename, addr)) {
+                fprintf(stderr, "%s\n", sqlite3_errmsg(*addr));
                 return EXIT_FAILURE;
         }
-	printf("Connecting\n");
         return EXIT_SUCCESS;
 }
 
@@ -115,6 +132,7 @@ sql2str:
 		acc_num += ITEM_NUM;
 		goto sql2str;
 	}
+	set_sql_item_cnt(i);		/* significant */
 
         if (sqlite3_finalize(stmt)) {
                 fprintf(stderr, "%s\n", sqlite3_errmsg(handle));

@@ -1,7 +1,7 @@
 /*
  * =====================================================================================
  *
- *       Filename:  main.c
+ *       Filename:  display.c
  *
  *    Description:  
  *
@@ -15,16 +15,18 @@
  * =====================================================================================
  */
 
-#include	"glue.h"
 #include	"ui.h"
-#include	"db.h"
 
-int main()
+WINDOW *get_w_display()
 {
-	/* get_date_time(); */
-	db_init();
-	ui_init();
-
-	close_db_main();
-	return EXIT_SUCCESS;
+	static WINDOW *w_display;
+	if (!w_display) {
+		w_display = newwin(DISPLAY_YS,
+				   DISPLAY_XS,
+				   DISPLAY_Y,
+				   DISPLAY_X);
+		keypad(w_display, TRUE);
+		wrefresh(w_display);
+	}
+	return w_display;
 }

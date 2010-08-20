@@ -28,6 +28,6 @@ extern 	int get_date_time(int);
 	/* for get_today_bill */
 #define		ADMIN		0
 #define		USER		1
-extern	char *get_today_bill(int, int);
+extern	char **get_today_bill(int, int);
 
 #endif

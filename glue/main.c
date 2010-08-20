@@ -21,7 +21,11 @@
 int main()
 {
 	/* get_date_time(); */
-	db_init();
+	sqlite3 *handle;
+	db_init("chafing.db", &handle);
 	ui_init();
-	return 0;
+
+
+	sqlite3_close(handle);
+	return EXIT_SUCCESS;
 }

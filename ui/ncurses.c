@@ -5,7 +5,7 @@
 
 static char *choices[] = {
         "收银",
-        "后台管理",
+        "吴哥管理",
         "无痛练习",
         "退出",
         (char *) NULL

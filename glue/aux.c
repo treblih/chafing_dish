@@ -16,6 +16,7 @@
  */
 
 #include	"glue.h"
+#include	"db.h"
 
 /* 
  * ===  FUNCTION  ======================================================================
@@ -44,14 +45,21 @@ int get_date_time(int req)
 	return p->tm_hour * 100 + p->tm_min;
 }
 
-char *get_today_bill(int date, int privilege)
+char **get_today_bill(int date, int privilege)
 {
 	char *sql;
 	if (privilege == USER) {
 		sql = "select time, sales from bill where date = %d";
-	} else {
-		sql = "select time, sales, cost, profil from bill where date = %d";
+		sprintf(sql, date);
+		return db_select(sql, 2,
+				 SELECT_INT,
+				 SELECT_DOUBLE);
 	}
+	sql = "select time, sales, cost, profil from bill where date = %d";
 	sprintf(sql, date);
-	return db_select(sql);
+	return db_select(sql, 4,
+			 SELECT_INT,
+			 SELECT_DOUBLE,
+			 SELECT_DOUBLE,
+			 SELECT_DOUBLE);
 }

@@ -31,9 +31,11 @@
 #define		ITEM_BYTE	ITEM_SIZE * ITEM_NUM
 
 	/* for db_select */
-#define		SELECT_INT	0
-#define		SELECT_DOUBLE	1
-#define		SELECT_TEXT	2
+enum SELECT {
+	SELECT_INT,
+	SELECT_DOUBLE,
+	SELECT_TEXT	
+};
 extern		char **db_select(sqlite3 *, char *, int, ...);
 
 #define		str_offset(n)	(n) * PTR_SIZE

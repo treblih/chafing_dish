@@ -59,6 +59,7 @@ char *get_date_time(int req)
 
 char **get_bill_list(char *date, int privilege)
 {
+	/* be careful, on stack */
 	char sql[100];
 	if (privilege == USER) {
 		sprintf(sql, "select time, sales from bill where date = '%s'", 

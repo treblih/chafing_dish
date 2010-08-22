@@ -41,40 +41,20 @@ static FUNCP event[] = {
 static FUNCP kb_response_transact[] = {
 	menu_direct,
 	menu_enter,
+	NULL,
 	NULL
 };
 
 static FUNCP kb_response_bills[] = {
 	menu_direct,
 	NULL,
+	NULL,
 	NULL
 };
 
 static void *collect_money()
 {
-	return 0;
-}
-
-void *transact()
-{
-	int choice_n = ARRAY_SIZE(choice);
 	WINDOW *win = get_win(W_RIGHT);
-	ITEM **item = item_initialize(choice, choice_desc, 
-			              event, choice_n, FP_ARRAY);
-	/* display in a sinlge col */
-	MENU *menu = menu_initialize(win, item, 1);	
-	WIDGET *widget = widget_init(win, menu, NULL, 
-			             kb_response_transact, DESC_NOTICE);
-
-	interact(widget);
-
-	/* free */
-	free_widget(widget);
-        unpost_menu(menu);
-        for (int i = 0; i < choice_n; ++i) {
-                free_item(item[i]);
-        }
-        free_menu(menu);
 	return 0;
 }
 
@@ -89,19 +69,59 @@ static void *get_today_bill()
 	/* no description, no attach funcion */
 	ITEM **item = item_initialize(bill_list, NULL, 
 				      NULL, choice_n, FP_SINGLE);
-	MENU *menu = menu_initialize(win, item, 3);
-	WIDGET *widget = widget_init(win, menu, NULL, 
-			             kb_response_bills, DESC_NO);
+
+	/*-----------------------------------------------------------------------------
+	 *  init variable menu
+	 *-----------------------------------------------------------------------------*/
+        MENU *menu = new_menu(item);
+        menu_opts_off(menu, O_SHOWDESC);
+        set_menu_win(menu, win);
+        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
+	/* display in a sinlge col */
+        set_menu_format(menu, 10, 3);
+        post_menu(menu);
+        wrefresh(win);
+
+	WIDGET *widget = widget_init(win, menu, 
+				     (FUNCP)unpost_menu, 
+				     (FUNCP)free_menu,
+				     (FUNCP)free_item,
+				     kb_response_bills, DESC_NO);
+	interact(widget);
+
+	/* free, including menu/items */
+	release_widget(widget, (void **)item, choice_n);
+	free_bill_list(bill_list);
+	return 0;
+}
+
+void *transact()
+{
+	int choice_n = ARRAY_SIZE(choice);
+	WINDOW *win = get_win(W_RIGHT);
+	ITEM **item = item_initialize(choice, choice_desc, 
+			              event, choice_n, FP_ARRAY);
+	/*-----------------------------------------------------------------------------
+	 *  init variable menu
+	 *-----------------------------------------------------------------------------*/
+        MENU *menu = new_menu(item);
+        menu_opts_off(menu, O_SHOWDESC);
+        set_menu_win(menu, win);
+        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
+	/* display in a sinlge col */
+        set_menu_format(menu, 10, 1);
+        post_menu(menu);
+        wrefresh(win);
+
+	WIDGET *widget = widget_init(win, menu,
+				     (FUNCP)unpost_menu, 
+				     (FUNCP)free_menu,
+				     (FUNCP)free_item,
+			             kb_response_transact, DESC_NOTICE);
 
 	interact(widget);
 
-	/* free */
-	free_widget(widget);
-        unpost_menu(menu);
-        for (int i = 0; i < choice_n; ++i) {
-                free_item(item[i]);
-        }
-        free_menu(menu);
-	free_bill_list(bill_list);
+	/* free, including menu/items */
+	release_widget(widget, (void **)item, choice_n);
 	return 0;
 }

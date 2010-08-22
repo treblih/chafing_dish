@@ -18,21 +18,37 @@
 #include	"widget.h"
 
 WIDGET *widget_init(WINDOW *win, 
-		    MENU   *menu, 
-		    FORM   *form, 
+		    void   *wid, 	/* panel/menu/form */
+		    FUNCP   unpost,
+		    FUNCP   free_set,
+		    FUNCP   free_elem,
 		    FUNCP  *fp,
 		    int    desc)
 {
 	WIDGET *widget = calloc(1, sizeof (WIDGET));
 	widget->win = win;
-	widget->menu = menu;
-	widget->form = form;
+	widget->wid = wid;
+	widget->unpost = unpost;
+	widget->free_set = free_set;
+	widget->free_elem = free_elem;
 	widget->desc = desc;
 	FUNCP *fp_addr = &widget->direct;
 	for (int i = 0; i < WIDGET_FUNC_CNT; ++i) {
 		*fp_addr++ = fp[i];
 	}
 	return widget;
+}
+
+int release_widget(WIDGET *widget, void **elem_arr, int cnt)
+{
+	/* release_menu */
+	void *wid = widget->wid;
+        widget->unpost(wid);
+        for (int i = 0; i < cnt; ++i) {
+		widget->free_elem(elem_arr[i]);
+        }
+	widget->free_set(wid);
+	return 0;
 }
 
 WINDOW *get_attach_win(WIDGET *widget)

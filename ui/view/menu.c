@@ -17,18 +17,9 @@
 
 #include	"widget.h"
 
-MENU *menu_initialize(WINDOW *win, ITEM **item, int cols)
-{
-        MENU *menu = new_menu(item);
-        menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
-        set_menu_format(menu, 10, cols);
-        post_menu(menu);
-        wrefresh(win);
-	return menu;
-}
-
+/*-----------------------------------------------------------------------------
+ *  abstract item initialization not menu because of it's variability
+ *-----------------------------------------------------------------------------*/
 ITEM **item_initialize(char **name, char **desc, FUNCP *fp, int cnt, int is_fp_single)
 {
         ITEM **item = (ITEM **)calloc(cnt + 1, sizeof (ITEM *));

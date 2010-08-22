@@ -23,14 +23,7 @@ int interact(WIDGET *widget)
 	int c;
 	FUNCP f;
 	WINDOW *win = get_attach_win(widget);
-#if 0
-	if (widget->menu) {
-		MENU *wid = widget->menu;
-	} else {
-		FORM *wid = widget->form;
-	}
-#endif
-	MENU *wid = widget->menu;
+	void *wid = widget->wid;
 	int desc = widget->desc;
 
         while ((c = wgetch(win)) != '/') {
@@ -55,9 +48,15 @@ int interact(WIDGET *widget)
 			if (f = widget->enter)
 				f(wid);
 			break;
-		case '-':
+		case '-': /* 0x2d */
 			if (f = widget->dash)
 				f(wid);
+			break;
+			/* all printable chars */
+		case 0x20 ... 0x2c: 
+		case 0x2e ... 0x7e:
+			if (f = widget->input)
+				f(wid, c);
 			break;
 		default:
 			break;

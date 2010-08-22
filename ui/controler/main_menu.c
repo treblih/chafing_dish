@@ -63,7 +63,8 @@ static FUNCP event[] = {
 static FUNCP kb_response[] = {
 	menu_direct,
 	menu_enter,
-	NULL
+	NULL,		/* dash */
+	NULL		/* input */
 };
 
 int main_menu()
@@ -72,18 +73,28 @@ int main_menu()
 	WINDOW *win = get_win(W_LEFT);
 	ITEM **item = item_initialize(choice, choice_desc, 
 			        event, choice_n, FP_ARRAY);
+
+	/*-----------------------------------------------------------------------------
+	 *  init variable menu
+	 *-----------------------------------------------------------------------------*/
+        MENU *menu = new_menu(item);
+        menu_opts_off(menu, O_SHOWDESC);
+        set_menu_win(menu, win);
+        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
 	/* display in a sinlge col */
-	MENU *menu = menu_initialize(win, item, 1);	
-	WIDGET *widget = widget_init(win, menu, NULL, kb_response, DESC_NOTICE);
+        set_menu_format(menu, 10, 1);
+        post_menu(menu);
+        wrefresh(win);
+
+	WIDGET *widget = widget_init(win, menu, 
+				     (FUNCP)unpost_menu, 
+				     (FUNCP)free_menu,
+				     (FUNCP)free_item,
+			             kb_response, DESC_NOTICE);
 
 	interact(widget);
 
-	/* free */
-	free_widget(widget);
-        unpost_menu(menu);
-        for (int i = 0; i < choice_n; ++i) {
-                free_item(item[i]);
-        }
-        free_menu(menu);
+	/* free, including menu/items */
+	release_widget(widget, (void **)item, choice_n);
 	return 0;
 }

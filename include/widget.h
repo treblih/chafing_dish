@@ -26,14 +26,19 @@ typedef void *(*FUNCP)();
 
 typedef struct WIDGET {
 	WINDOW *win;
-	MENU *menu;
-	FORM *form;
+	void *wid;		/* panel/menu/form */
+	/* sys func */
+	FUNCP unpost;
+	FUNCP free_set;
+	FUNCP free_elem;
+	/* user func */
 	FUNCP direct;
 	FUNCP enter;
 	FUNCP dash;
+	FUNCP input;
 	int desc;		/* whether item's desc will be shown */
 } WIDGET;
-#define		WIDGET_FUNC_CNT		3
+#define		WIDGET_FUNC_CNT		4
 
 
 enum WIN_LAYOUT {
@@ -90,10 +95,8 @@ enum DIRECTION {
 #define 	ARRAY_SIZE(a)	(sizeof (a) / sizeof (a[0]))
 
 #define		ui_close()	endwin()
-#define		free_widget(a)	free(a)
 
 /* menu.c */
-extern MENU *menu_initialize(WINDOW *, ITEM **, int);
 extern ITEM **item_initialize(char **, char **, FUNCP *, int, int);
 extern void *menu_direct(MENU *, int, int);
 extern void *menu_enter(MENU *);
@@ -103,7 +106,9 @@ extern int ui_init(void);
 extern int ncurses_init(void);
 
 /* widget.c */
-extern WIDGET *widget_init(WINDOW *, MENU *, FORM *, FUNCP *, int);
+extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 
+		                             FUNCP *, int);
+extern int release_widget(WIDGET *, void **, int);
 extern WINDOW *get_attach_win(WIDGET *);
 
 /* win.c */

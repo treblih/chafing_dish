@@ -23,14 +23,13 @@ WIDGET *widget_init(WINDOW *win,
 		    FUNCP  *fp,
 		    int    desc)
 {
-	int size = ARRAY_SIZE(fp);
-	WIDGET *widget = calloc(size, 4);
+	WIDGET *widget = calloc(1, sizeof (WIDGET));
 	widget->win = win;
 	widget->menu = menu;
 	widget->form = form;
 	widget->desc = desc;
-	FUNCP *fp_addr = (void *)widget + 4;
-	for (int i = 0; i < size; ++i) {
+	FUNCP *fp_addr = &widget->direct;
+	for (int i = 0; i < WIDGET_FUNC_CNT; ++i) {
 		*fp_addr++ = fp[i];
 	}
 	return widget;

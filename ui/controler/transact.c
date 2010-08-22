@@ -26,13 +26,11 @@ static void *get_today_bill();
 static char *choice[] = {
         "结帐",
         "今日账单查询",
-        (char *) NULL
 };
 
 static char *choice_desc[] = {
         "哇卡卡卡卡卡卡要收钱了",
         "查询消费明细/退选部分菜种",
-        (char *) NULL
 };
 
 static FUNCP event[] = {
@@ -52,11 +50,6 @@ static FUNCP kb_response_bills[] = {
 	NULL
 };
 
-static void *BBB()
-{
-	return 0;
-}
-
 static void *collect_money()
 {
 	return 0;
@@ -67,7 +60,7 @@ void *transact()
 	int choice_n = ARRAY_SIZE(choice);
 	WINDOW *win = get_win(W_RIGHT);
 	ITEM **item = item_initialize(choice, choice_desc, 
-			        event, choice_n, FP_ARRAY);
+			              event, choice_n, FP_ARRAY);
 	/* display in a sinlge col */
 	MENU *menu = menu_initialize(win, item, 1);	
 	WIDGET *widget = widget_init(win, menu, NULL, 
@@ -87,12 +80,15 @@ void *transact()
 
 static void *get_today_bill()
 {
-	int choice_n = get_sql_item_cnt();
 	char *date = get_date_time(GET_DATE);
 	char **bill_list = get_bill_list(date, USER);
-	WINDOW *win = get_win(W_RIGHT);
-	ITEM **item = item_initialize(bill_list, NULL, (FUNCP *)BBB, 
-			        choice_n, FP_SINGLE);
+	/* get_sql_item_cnt() ought to be invocated after get_bill_list() */
+	int choice_n = get_sql_item_cnt();
+	WINDOW *win = get_win(W_MID);
+
+	/* no description, no attach funcion */
+	ITEM **item = item_initialize(bill_list, NULL, 
+				      NULL, choice_n, FP_SINGLE);
 	MENU *menu = menu_initialize(win, item, 3);
 	WIDGET *widget = widget_init(win, menu, NULL, 
 			             kb_response_bills, DESC_NO);

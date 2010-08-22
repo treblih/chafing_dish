@@ -87,6 +87,14 @@ void set_sql_item_cnt(int n)
 	sql_item_cnt = n;
 }
 
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  get_sql_item_cnt
+ *  Description:  called after get_bill_list
+ *
+ *  get_bill_list -> db_select -> set_sql_item_cnt
+ * =====================================================================================
+ */
 int get_sql_item_cnt()
 {
 	return sql_item_cnt;

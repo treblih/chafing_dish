@@ -21,3 +21,4 @@ boot/*
 bochs*
 tags
 cscope*
+core*

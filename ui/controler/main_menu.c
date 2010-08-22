@@ -41,8 +41,7 @@ static char *choice[] = {
         "吴哥管理",
         "无痛练习",
 	"发送BUG报告",
-        "退出",
-        (char *) NULL
+        "退出"
 };
 
 static char *choice_desc[] = {
@@ -50,8 +49,7 @@ static char *choice_desc[] = {
         "数据查询/分析/管理，需要管理员权限",
         "依据现有数据练习软件操作，结果不会更新进数据库",
 	"自动发送记录系统错误文件",
-        "退出",
-        (char *) NULL
+        "退出"
 };
 
 static FUNCP event[] = {

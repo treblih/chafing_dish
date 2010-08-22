@@ -19,21 +19,25 @@
 
 static WINDOW *w_arr[5];
 
-static int init(WINDOW *w, int ys, int xs, int y, int x, int key)
+static int init(WINDOW **win, int ys, int xs, int y, int x, int key, int color)
 {
-	w = newwin(ys, xs, y, x);
+	WINDOW *w = *win = newwin(ys, xs, y, x);
         keypad(w, key);
+	if (color) {
+		wbkgd(w, color);
+	}
 	wrefresh(w);
 	return 0;
 }
 
 int win_init()
 {
-	init(w_arr[0], LEFT_YS, LEFT_XS, LEFT_Y, LEFT_X, TRUE);
-	init(w_arr[1], RIGHT_YS, RIGHT_XS, RIGHT_Y, RIGHT_X, TRUE);
-	init(w_arr[2], MID_YS, MID_XS, MID_Y, MID_X, TRUE);
-	init(w_arr[3], STATUS_YS, STATUS_XS, STATUS_Y, STATUS_X, FALSE);
-	init(w_arr[4], NOTICE_YS, NOTICE_XS, NOTICE_Y, NOTICE_X, FALSE);
+	init(&w_arr[0], LEFT_YS, LEFT_XS, LEFT_Y, LEFT_X, TRUE, 0);
+	init(&w_arr[1], RIGHT_YS, RIGHT_XS, RIGHT_Y, RIGHT_X, TRUE, 0);
+	init(&w_arr[2], MID_YS, MID_XS, MID_Y, MID_X, TRUE, 0);
+	init(&w_arr[3], STATUS_YS, STATUS_XS, STATUS_Y, STATUS_X, FALSE,
+	               COLOR_PAIR(1));
+	init(&w_arr[4], NOTICE_YS, NOTICE_XS, NOTICE_Y, NOTICE_X, FALSE, 0); 
 	return 0;
 }
 

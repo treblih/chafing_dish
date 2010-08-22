@@ -33,6 +33,7 @@ typedef struct WIDGET {
 	FUNCP dash;
 	int desc;		/* whether item's desc will be shown */
 } WIDGET;
+#define		WIDGET_FUNC_CNT		3
 
 
 enum WIN_LAYOUT {
@@ -106,7 +107,6 @@ extern WIDGET *widget_init(WINDOW *, MENU *, FORM *, FUNCP *, int);
 extern WINDOW *get_attach_win(WIDGET *);
 
 /* win.c */
-static int init(WINDOW *, int, int, int, int, int);
 extern int win_init(void);
 extern WINDOW *get_win(int);
 

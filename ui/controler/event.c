@@ -36,27 +36,27 @@ int interact(WIDGET *widget)
         while ((c = wgetch(win)) != '/') {
                 switch (c) {
 		case KEY_LEFT:
-			if (f = widget->direct())
+			if (f = widget->direct)
 				f(wid, D_LEFT, desc);
 			break;
 		case KEY_RIGHT:
-			if (f = widget->direct())
+			if (f = widget->direct)
 				f(wid, D_RIGHT, desc);
 			break;
 		case KEY_UP:
-			if (f = widget->direct())
+			if (f = widget->direct)
 				f(wid, D_UP, desc);
 			break;
 		case KEY_DOWN:
-			if (f = widget->direct())
+			if (f = widget->direct)
 				f(wid, D_DOWN, desc);
 			break;
 		case 10: /* Enter */
-			if (f = widget->enter())
+			if (f = widget->enter)
 				f(wid);
 			break;
 		case '-':
-			if (f = widget->dash())
+			if (f = widget->dash)
 				f(wid);
 			break;
 		default:

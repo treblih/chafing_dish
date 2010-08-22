@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  main.c
+ *       Filename:  event.h
  *
  *    Description:  
  *
- *        Created:  20.08.10
- *       Revision:  
+ *        Created:  22.08.10 02:32
+ *       Revision:  none
  *       Compiler:  GCC 4.4
  *
  *         Author:  Yang Zhang, treblih.divad@gmail.com
@@ -15,17 +15,16 @@
  * =====================================================================================
  */
 
-#include	"glue.h"
-#include	"db.h"
-#include	"widget.h"
+#ifndef		EVENT_H
+#define		EVENT_H
 
-int main()
-{
-	/* get_date_time(); */
-	db_init();
-	ui_init();
+#include	<stdlib.h>
 
-	ui_close();
-	close_db_main();
-	return EXIT_SUCCESS;
-}
+#define 	ARRAY_SIZE(a)	(sizeof (a) / sizeof (a[0]))
+
+
+	/* for item_init() */
+#define		FP_ARRAY	0
+#define		FP_SINGLE	1
+
+#endif

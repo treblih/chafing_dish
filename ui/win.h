@@ -1,12 +1,12 @@
 /*
  * =====================================================================================
  *
- *       Filename:  main.c
+ *       Filename:  win.h
  *
  *    Description:  
  *
- *        Created:  20.08.10
- *       Revision:  
+ *        Created:  22.08.10 01:39
+ *       Revision:  none
  *       Compiler:  GCC 4.4
  *
  *         Author:  Yang Zhang, treblih.divad@gmail.com
@@ -15,17 +15,15 @@
  * =====================================================================================
  */
 
-#include	"glue.h"
-#include	"db.h"
-#include	"widget.h"
+#ifndef		WIN_H
+#define		WIN_H
 
-int main()
-{
-	/* get_date_time(); */
-	db_init();
-	ui_init();
+enum {
+	W_LEFT,
+	W_RIGHT,
+	W_MID,
+	W_STATUS,
+	W_NOTICE
+};
 
-	ui_close();
-	close_db_main();
-	return EXIT_SUCCESS;
-}
+#endif

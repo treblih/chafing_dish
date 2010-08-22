@@ -17,20 +17,19 @@
 
 #include	"widget.h"
 
-MENU *menu_init(WINDOW *win, ITEM **item, int cols)
+MENU *menu_initialize(WINDOW *win, ITEM **item, int cols)
 {
-	WINDOW *w = get_win(win);
         MENU *menu = new_menu(item);
         menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, w_display);
-        set_menu_sub(menu, derwin(w_display, 0, 0, 10, 0));
+        set_menu_win(menu, win);
+        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
         set_menu_format(menu, 10, cols);
         post_menu(menu);
-        wrefresh(w_display);
+        wrefresh(win);
 	return menu;
 }
 
-ITEM **item_init(char **name, char **desc, FUNCP fp, int cnt, int is_fp_single)
+ITEM **item_initialize(char **name, char **desc, FUNCP *fp, int cnt, int is_fp_single)
 {
         ITEM **item = (ITEM **)calloc(cnt + 1, sizeof (ITEM *));
 
@@ -46,7 +45,7 @@ ITEM **item_init(char **name, char **desc, FUNCP fp, int cnt, int is_fp_single)
 
 	if (is_fp_single) {
 		for (int i = 0; i < cnt; ++i) {
-			set_item_userptr(item[i], fp);
+			set_item_userptr(item[i], (FUNCP)fp);
 		}
 	} else {
 		for (int i = 0; i < cnt; ++i) {
@@ -58,19 +57,28 @@ ITEM **item_init(char **name, char **desc, FUNCP fp, int cnt, int is_fp_single)
 
 void *menu_direct(MENU *menu, int direct, int desc)
 {
+	
+	/*-----------------------------------------------
+	 * /usr/include/menu.h
+	 *
+	 * #define REQ_LEFT_ITEM           (KEY_MAX + 1)
+	 * #define REQ_RIGHT_ITEM          (KEY_MAX + 2)
+	 * #define REQ_UP_ITEM             (KEY_MAX + 3)
+	 * #define REQ_DOWN_ITEM           (KEY_MAX + 4)
+	 *-----------------------------------------------*/
 	menu_driver(menu, KEY_MAX + direct);
 	if (desc) {
 		WINDOW *w_notice = get_win(W_NOTICE);
 		werase(w_notice);
 		wprintw(w_notice, "%s", 
 			item_description(current_item(menu)));
+		wrefresh(w_notice);
 	}
 	pos_menu_cursor(menu);
-	wrefresh(w_notice);
 	return NULL;
 }
 
-void *enter()
+void *menu_enter(MENU *menu)
 {
 	FUNCP f = item_userptr(current_item(menu));
 	f();

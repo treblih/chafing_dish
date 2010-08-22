@@ -15,13 +15,24 @@
  * =====================================================================================
  */
 
+#include	"widget.h"
+#include	"event.h"
+
 int interact(WIDGET *widget)
 {
+	int c;
 	FUNCP f;
 	WINDOW *win = get_attach_win(widget);
-	widget->menu ? (MENU *wid = widget->menu)
-		     : (FORM *wid = widget->form);
+#if 0
+	if (widget->menu) {
+		MENU *wid = widget->menu;
+	} else {
+		FORM *wid = widget->form;
+	}
+#endif
+	MENU *wid = widget->menu;
 	int desc = widget->desc;
+
         while ((c = wgetch(win)) != '/') {
                 switch (c) {
 		case KEY_LEFT:

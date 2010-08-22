@@ -1,5 +1,6 @@
 #include	<locale.h>
 #include	"widget.h"
+#include	"event.h"
 
 int ui_init()
 {

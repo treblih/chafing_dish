@@ -64,17 +64,18 @@ static FUNCP event[] = {
 
 static FUNCP kb_response[] = {
 	menu_direct,
-	enter,
+	menu_enter,
 	NULL
 };
 
 int main_menu()
 {
+	int choice_n = ARRAY_SIZE(choice);
 	WINDOW *win = get_win(W_LEFT);
-	ITEM **item = item_init(choice, choice_desc, 
-			        event, ARRAY_SIZE(choice), FP_ARRAY);
+	ITEM **item = item_initialize(choice, choice_desc, 
+			        event, choice_n, FP_ARRAY);
 	/* display in a sinlge col */
-	MENU *menu = menu_init(win, item, 1);	
+	MENU *menu = menu_initialize(win, item, 1);	
 	WIDGET *widget = widget_init(win, menu, NULL, kb_response, DESC_NOTICE);
 
 	interact(widget);
@@ -82,8 +83,8 @@ int main_menu()
 	/* free */
 	free_widget(widget);
         unpost_menu(menu);
-        for (int i = 0; i < choices_n; ++i) {
-                free_item(menu_items[i]);
+        for (int i = 0; i < choice_n; ++i) {
+                free_item(item[i]);
         }
         free_menu(menu);
 	return 0;

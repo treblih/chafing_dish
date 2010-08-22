@@ -15,14 +15,12 @@
  * =====================================================================================
  */
 
-#include 	<menu.h>
-#include 	<form.h>
-#include 	<stdlib.h>
-#include	"ui.h"
+#include	"widget.h"
+#include	"event.h"
 #include	"glue.h"
 
-static int collect_money();
-static int get_today_bill();
+static void *collect_money();
+static void *get_today_bill();
 
 
 static char *choice[] = {
@@ -42,24 +40,20 @@ static FUNCP event[] = {
 	get_today_bill
 };
 
-void *transact()
+static FUNCP kb_response_transact[] = {
+	menu_direct,
+	menu_enter,
+	NULL
+};
+
+static FUNCP kb_response_bills[] = {
+	menu_direct,
+	NULL,
+	NULL
+};
+
+static void *BBB()
 {
-	WINDOW *win = get_win(W_RIGHT);
-	ITEM **item = item_init(choice, choice_desc, 
-			        event, ARRAY_SIZE(choice), FP_ARRAY);
-	/* display in a sinlge col */
-	menu = menu_init(win, item, 1);	
-	WIDGET *widget = widget_init(win, kb_response);
-
-	interact(widget);
-
-	/* free */
-	free_widget(widget);
-        unpost_menu(menu);
-        for (int i = 0; i < choice_n; ++i) {
-                free_item(menu_items[i]);
-        }
-        free_menu(menu);
 	return 0;
 }
 
@@ -67,15 +61,17 @@ static void *collect_money()
 {
 	return 0;
 }
-static void *get_today_bill()
+
+void *transact()
 {
-	char *date = get_date_time(GET_DATE);
-	char **bill_list = get_bill_list(date, USER);
+	int choice_n = ARRAY_SIZE(choice);
 	WINDOW *win = get_win(W_RIGHT);
-	ITEM **item = item_init(bill_list, NULL, event, 
-			        get_sql_item_cnt(), FP_ARRAY);
-	MENU *menu = menu_init(win, item, 3);
-	WIDGET *widget = widget_init(win, kb_response);
+	ITEM **item = item_initialize(choice, choice_desc, 
+			        event, choice_n, FP_ARRAY);
+	/* display in a sinlge col */
+	MENU *menu = menu_initialize(win, item, 1);	
+	WIDGET *widget = widget_init(win, menu, NULL, 
+			             kb_response_transact, DESC_NOTICE);
 
 	interact(widget);
 
@@ -83,39 +79,33 @@ static void *get_today_bill()
 	free_widget(widget);
         unpost_menu(menu);
         for (int i = 0; i < choice_n; ++i) {
-                free_item(menu_items[i]);
+                free_item(item[i]);
+        }
+        free_menu(menu);
+	return 0;
+}
+
+static void *get_today_bill()
+{
+	int choice_n = get_sql_item_cnt();
+	char *date = get_date_time(GET_DATE);
+	char **bill_list = get_bill_list(date, USER);
+	WINDOW *win = get_win(W_RIGHT);
+	ITEM **item = item_initialize(bill_list, NULL, (FUNCP *)BBB, 
+			        choice_n, FP_SINGLE);
+	MENU *menu = menu_initialize(win, item, 3);
+	WIDGET *widget = widget_init(win, menu, NULL, 
+			             kb_response_bills, DESC_NO);
+
+	interact(widget);
+
+	/* free */
+	free_widget(widget);
+        unpost_menu(menu);
+        for (int i = 0; i < choice_n; ++i) {
+                free_item(item[i]);
         }
         free_menu(menu);
 	free_bill_list(bill_list);
 	return 0;
-}
-
-static void *up()
-{
-	WINDOW *w_notice = get_win(W_NOTICE);
-	menu_driver(menu, REQ_UP_ITEM);
-	werase(w_notice);
-	wprintw(w_notice, "%s", item_description(current_item(menu)));
-	pos_menu_cursor(menu);
-	wrefresh(w_notice);
-	return NULL;
-}
-
-static void *down()
-{
-	WINDOW *w_notice = get_win(W_NOTICE);
-	menu_driver(menu, REQ_DONW_ITEM);
-	werase(w_notice);
-	wprintw(w_notice, "%s", item_description(current_item(menu)));
-	pos_menu_cursor(menu);
-	wrefresh(w_notice);
-	return NULL;
-}
-
-static void *enter()
-{
-	FUNCP f = item_userptr(current_item(menu));
-	f();
-	pos_menu_cursor(menu);
-	return NULL;
 }

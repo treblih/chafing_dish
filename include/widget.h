@@ -82,9 +82,32 @@ enum DIRECTION {
 #define		DESC_NO		0
 #define		DESC_NOTICE	1
 
+	/* for item_init() */
+#define		FP_ARRAY	0
+#define		FP_SINGLE	1
+
+#define 	ARRAY_SIZE(a)	(sizeof (a) / sizeof (a[0]))
 
 #define		ui_close()	endwin()
 #define		free_widget(a)	free(a)
 
+/* menu.c */
+extern MENU *menu_initialize(WINDOW *, ITEM **, int);
+extern ITEM **item_initialize(char **, char **, FUNCP *, int, int);
+extern void *menu_direct(MENU *, int, int);
+extern void *menu_enter(MENU *);
+
+/* stdscr.c */
+extern int ui_init(void);
+extern int ncurses_init(void);
+
+/* widget.c */
+extern WIDGET *widget_init(WINDOW *, MENU *, FORM *, FUNCP *, int);
+extern WINDOW *get_attach_win(WIDGET *);
+
+/* win.c */
+static int init(WINDOW *, int, int, int, int, int);
+extern int win_init(void);
+extern WINDOW *get_win(int);
 
 #endif

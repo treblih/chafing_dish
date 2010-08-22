@@ -17,29 +17,23 @@
 
 #include	"widget.h"
 
-static WINDOW *w_arr[] = {
-	w_left,
-	w_right,
-	w_mid,
-	w_status,
-	w_notice
-};
+static WINDOW *w_arr[5];
 
 static int init(WINDOW *w, int ys, int xs, int y, int x, int key)
 {
 	w = newwin(ys, xs, y, x);
-        keypad(w_menu, key);
-	wrefresh(w_left);
+        keypad(w, key);
+	wrefresh(w);
 	return 0;
 }
 
 int win_init()
 {
-	init(w_left, LEFT_YS, LEFT_XS, LEFT_Y, LEFT_X, TRUE);
-	init(w_right, RIGHT_YS, RIGHT_XS, RIGHT_Y, RIGHT_X, TRUE);
-	init(w_mid, MID_YS, MID_XS, MID_Y, MID_X, TRUE);
-	init(w_status, STATUS_YS, STATUS_XS, STATUS_Y, STATUS_X, FALSE);
-	init(w_notice, NOTICE_YS, NOTICE_XS, NOTICE_Y, NOTICE_X, FALSE);
+	init(w_arr[0], LEFT_YS, LEFT_XS, LEFT_Y, LEFT_X, TRUE);
+	init(w_arr[1], RIGHT_YS, RIGHT_XS, RIGHT_Y, RIGHT_X, TRUE);
+	init(w_arr[2], MID_YS, MID_XS, MID_Y, MID_X, TRUE);
+	init(w_arr[3], STATUS_YS, STATUS_XS, STATUS_Y, STATUS_X, FALSE);
+	init(w_arr[4], NOTICE_YS, NOTICE_XS, NOTICE_Y, NOTICE_X, FALSE);
 	return 0;
 }
 

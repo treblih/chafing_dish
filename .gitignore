@@ -13,9 +13,11 @@
 tmp
 ma
 
+a.c
 a.s
 .vimrc
 
 boot/*
 bochs*
 tags
+cscope*

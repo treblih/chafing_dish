@@ -16,7 +16,6 @@
  */
 
 #include	"glue.h"
-#include	"db.h"
 #include	"widget.h"
 
 int main()

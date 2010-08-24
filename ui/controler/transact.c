@@ -34,13 +34,14 @@ static char *choice_desc[] = {
 };
 
 static FUNCP event[] = {
-	collect_money,
+	sales,
 	get_today_bill
 };
 
 static FUNCP kb_response_transact[] = {
 	menu_direct,
 	menu_enter,
+	NULL,
 	NULL,
 	NULL
 };
@@ -49,14 +50,10 @@ static FUNCP kb_response_bills[] = {
 	menu_direct,
 	NULL,
 	NULL,
+	NULL,
 	NULL
 };
 
-static void *collect_money()
-{
-	WINDOW *win = get_win(W_RIGHT);
-	return 0;
-}
 
 static void *get_today_bill()
 {
@@ -76,7 +73,7 @@ static void *get_today_bill()
         MENU *menu = new_menu(item);
         menu_opts_off(menu, O_SHOWDESC);
         set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
+        set_menu_sub(menu, derwin(win, 0, 0, 2, 0));
 	/* display in a sinlge col */
         set_menu_format(menu, 10, 3);
         post_menu(menu);
@@ -90,7 +87,7 @@ static void *get_today_bill()
 	interact(widget);
 
 	/* free, including menu/items */
-	release_widget(widget, (void **)item, choice_n);
+	free_widget(widget, (void **)item, choice_n);
 	free_bill_list(bill_list);
 	return 0;
 }
@@ -107,7 +104,7 @@ void *transact()
         MENU *menu = new_menu(item);
         menu_opts_off(menu, O_SHOWDESC);
         set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
+        set_menu_sub(menu, derwin(win, 0, 0, 2, 0));
 	/* display in a sinlge col */
         set_menu_format(menu, 10, 1);
         post_menu(menu);
@@ -122,6 +119,6 @@ void *transact()
 	interact(widget);
 
 	/* free, including menu/items */
-	release_widget(widget, (void **)item, choice_n);
+	free_widget(widget, (void **)item, choice_n);
 	return 0;
 }

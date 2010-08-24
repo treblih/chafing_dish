@@ -24,11 +24,6 @@
 #include	<stdarg.h>
 #include	<sqlite3.h>
 
-#define		PTR_SIZE	sizeof (char *)
-#define		STR_LEN		64
-#define		ITEM_NUM	32
-#define		ITEM_SIZE	PTR_SIZE + STR_LEN
-#define		ITEM_BYTE	ITEM_SIZE * ITEM_NUM
 
 	/* for db_select */
 enum SELECT {
@@ -36,7 +31,8 @@ enum SELECT {
 	SELECT_DOUBLE,
 	SELECT_TEXT	
 };
-extern		char **db_select(sqlite3 *, char *, int, ...);
+extern	char **db_select(sqlite3 *, char *, int, ...);
+extern  void *db_select_1_row(sqlite3 *, char *, int, ...);
 
 #define		str_offset(n)	(n) * PTR_SIZE
 extern	int db_init(const char *, sqlite3 **);

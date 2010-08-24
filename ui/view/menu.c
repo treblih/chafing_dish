@@ -59,13 +59,10 @@ void *menu_direct(MENU *menu, int direct, int desc)
 	 *-----------------------------------------------*/
 	menu_driver(menu, KEY_MAX + direct);
 	if (desc) {
-		WINDOW *w_notice = get_win(W_NOTICE);
-		werase(w_notice);
-		wprintw(w_notice, "%s", 
+		print_notice("%s", 
 			item_description(current_item(menu)));
-		wrefresh(w_notice);
 	}
-	pos_menu_cursor(menu);
+	/* pos_menu_cursor(menu); */
 	return NULL;
 }
 
@@ -73,6 +70,6 @@ void *menu_enter(MENU *menu)
 {
 	FUNCP f = item_userptr(current_item(menu));
 	f();
-	pos_menu_cursor(menu);
+	/* pos_menu_cursor(menu); */
 	return NULL;
 }

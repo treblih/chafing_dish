@@ -45,3 +45,14 @@ WINDOW *get_win(int i)
 {
 	return w_arr[i];
 }
+
+int print_notice(const char *fmt, ...)
+{
+	va_list str;
+	va_start(str, fmt);
+	WINDOW *w_notice = get_win(W_NOTICE);
+	werase(w_notice);
+	int n = vw_printw(w_notice, fmt, str);
+	wrefresh(w_notice);
+	return n;
+}

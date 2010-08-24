@@ -48,6 +48,10 @@ int interact(WIDGET *widget)
 			if (f = widget->enter)
 				f(wid);
 			break;
+		case 0x7f:  /* Backspace */
+			if (f = widget->backspace)
+				f(wid);
+			break;
 		case '-': /* 0x2d */
 			if (f = widget->dash)
 				f(wid);

@@ -34,11 +34,12 @@ typedef struct WIDGET {
 	/* user func */
 	FUNCP direct;
 	FUNCP enter;
+	FUNCP backspace;
 	FUNCP dash;
 	FUNCP input;
 	int desc;		/* whether item's desc will be shown */
 } WIDGET;
-#define		WIDGET_FUNC_CNT		4
+#define		WIDGET_FUNC_CNT		5
 
 
 enum WIN_LAYOUT {
@@ -65,12 +66,12 @@ enum DIRECTION {
 #define		LEFT_Y		0
 #define		LEFT_X		0
 
-#define		RIGHT_YS	LINES - 3
-#define		RIGHT_XS	LEFT_XS
-#define		RIGHT_Y	0
-#define		RIGHT_X		COLS - 16
+#define		RIGHT_YS	LEFT_YS
+#define		RIGHT_XS	25
+#define		RIGHT_Y		0
+#define		RIGHT_X		COLS - RIGHT_XS - 2
 
-#define		MID_YS		LINES - 3
+#define		MID_YS		LEFT_YS
 #define		MID_XS		COLS - LEFT_XS - RIGHT_XS - 4
 #define		MID_Y		0
 #define		MID_X		LEFT_XS + 2
@@ -101,6 +102,12 @@ extern ITEM **item_initialize(char **, char **, FUNCP *, int, int);
 extern void *menu_direct(MENU *, int, int);
 extern void *menu_enter(MENU *);
 
+/* form.c */
+extern void *form_direct(FORM *, int, int);
+extern void *form_enter(FORM *);
+extern void *form_input(FORM *, int);
+extern void *form_backspace(FORM *);
+
 /* stdscr.c */
 extern int ui_init(void);
 extern int ncurses_init(void);
@@ -108,11 +115,12 @@ extern int ncurses_init(void);
 /* widget.c */
 extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 
 		                             FUNCP *, int);
-extern int release_widget(WIDGET *, void **, int);
+extern int free_widget(WIDGET *, void **, int);
 extern WINDOW *get_attach_win(WIDGET *);
 
 /* win.c */
 extern int win_init(void);
 extern WINDOW *get_win(int);
+extern int print_notice(const char *, ...);
 
 #endif

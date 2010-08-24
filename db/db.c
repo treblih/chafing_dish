@@ -19,8 +19,6 @@
 #include	"glue.h"
 
 static int init(const char *, sqlite3 **);
-static char **bulk_space(int);
-static char **bulk_expand(char **, int);
 
 static sqlite3 *handle_main;
 static sqlite3 *handle_daily;
@@ -63,17 +61,16 @@ char **db_select(sqlite3 *handle, char *sql, int col, ...)
 	 *  malloc is ok
 	 *  64 * (4 + 60)
 	 *-----------------------------------------------------------------------------*/
-	int idx = 0;
+	int type = 0;
 	int cnt;
 	int total;
 	int i = 0;
 	int acc_num = ITEM_NUM;
-        va_list type;
-	char **res = bulk_space(ITEM_NUM);
+	char **res = bulk_space(ITEM_NUM, ITEM_SIZE);
 	char **res_large;
-	char *tmp = malloc(STR_LEN * 4);
+	char *tmp = calloc(STR_LEN * 4, 1);
+	va_list field;
         sqlite3_stmt *stmt;
-	/* char *tmp_cur; */
 
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
                 fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
@@ -85,11 +82,11 @@ char **db_select(sqlite3 *handle, char *sql, int col, ...)
 	 *-----------------------------------------------------------------------------*/
 sql2str:
 	for (; sqlite3_step(stmt) != SQLITE_DONE && i < acc_num; ++i) {
-        	va_start(type, col);
+        	va_start(field, col);
 		total = 0;
                 for (int j = 0; j < col; ++j) {
-			idx = va_arg(type, int);
-			switch (idx) {
+			type = va_arg(field, int);
+			switch (type) {
 			case SELECT_INT:
                         	cnt = sprintf(tmp, "%d ", 
 				      sqlite3_column_int(stmt, j));
@@ -103,7 +100,7 @@ sql2str:
 				      sqlite3_column_text(stmt, j));
 				break;
 			default:
-				fprintf(stderr, "unknown sql type\n");
+				fprintf(stderr, "unknown sql field\n");
 				break;
 			}
 			total += cnt;
@@ -126,7 +123,8 @@ sql2str:
 	if (!(i < acc_num)) {
 		char **res_bak = res;
 		free(res);
-		res = bulk_expand(res_bak, acc_num);
+		/* acc_num -- cnt_orig */
+		res = bulk_expand(res_bak, acc_num, ITEM_SIZE, ITEM_NUM);
 		acc_num += ITEM_NUM;
 		goto sql2str;
 	}
@@ -136,32 +134,49 @@ sql2str:
                 fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
         }
 	free(tmp);
-        va_end(type);
+	va_end(field);
         return res;
 }
 
-static char **bulk_space(int cnt)
+void *db_select_1_row(sqlite3 *handle, char *sql, int col, ...)
 {
-	/* bulk */
-	char **res = calloc(cnt, ITEM_SIZE);
-	int str_start = (int)((char *)res + str_offset(cnt));
-	int str_addr = str_start;
+	int type;
+	va_list field;
+	va_start(field, col);
+        sqlite3_stmt *stmt;
 
-	/* retail */
-	for (int i = 0; i < cnt; ++i) {
-		res[i] = (char *)str_addr;
-		str_addr += STR_LEN;
+        if (sqlite3_prepare_v2(get_db_main(), sql, -1, &stmt, 0)) {
+                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+        }
+	if (sqlite3_step(stmt) == SQLITE_DONE) {
+		goto end;
 	}
-	return res;
-}
+	for (int i = 0; i < col; ++i) {
+		type = va_arg(field, int);
+		switch (type) {
+		case SELECT_INT:
+			*va_arg(field, int *) = 
+				sqlite3_column_int(stmt, i);
+			break;
+		case SELECT_DOUBLE:
+			*va_arg(field, double *) = 
+				sqlite3_column_double(stmt, i);
+			break;
+		case SELECT_TEXT:
+			/* unique */
+			strcpy(va_arg(field, char *), 
+			       sqlite3_column_text(stmt, i));
+			break;
+		default:
+			fprintf(stderr, "unknown sql type\n");
+			break;
+		}
+	}
 
-static char **bulk_expand(char **res, int cnt)
-{
-	int ptrs = str_offset(cnt);
-	char **res_large = bulk_space(cnt + ITEM_NUM);
-	memcpy(res_large, res, ptrs);
-	memcpy((char *)res_large + str_offset(cnt + ITEM_NUM), 
-	       (char *)res       + ptrs, 
-	        cnt * STR_LEN);
-	return res_large;
+end:
+        if (sqlite3_finalize(stmt)) {
+                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+        }
+	va_end(field);
+        return NULL;
 }

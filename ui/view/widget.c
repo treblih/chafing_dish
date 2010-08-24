@@ -39,7 +39,7 @@ WIDGET *widget_init(WINDOW *win,
 	return widget;
 }
 
-int release_widget(WIDGET *widget, void **elem_arr, int cnt)
+int free_widget(WIDGET *widget, void **elem_arr, int cnt)
 {
 	/* release_menu */
 	void *wid = widget->wid;

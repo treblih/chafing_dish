@@ -63,6 +63,7 @@ static FUNCP event[] = {
 static FUNCP kb_response[] = {
 	menu_direct,
 	menu_enter,
+	NULL,
 	NULL,		/* dash */
 	NULL		/* input */
 };
@@ -95,6 +96,6 @@ int main_menu()
 	interact(widget);
 
 	/* free, including menu/items */
-	release_widget(widget, (void **)item, choice_n);
+	free_widget(widget, (void **)item, choice_n);
 	return 0;
 }

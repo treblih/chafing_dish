@@ -16,7 +16,6 @@
  */
 
 #include	"glue.h"
-#include	"db.h"
 
 
 static int sql_item_cnt;
@@ -65,8 +64,8 @@ char **get_bill_list(char *date, int privilege)
 		sprintf(sql, "select time, sales from bill where date = '%s'", 
 			date);
 		return db_select(get_db_main(), sql, 2,
-				 SELECT_TEXT,
-				 SELECT_DOUBLE);
+			      SELECT_TEXT,
+			      SELECT_DOUBLE);
 	}
 	sprintf(sql, "select time, sales, cost, profil from bill where date = '%s'", 
 		date);
@@ -98,4 +97,30 @@ void set_sql_item_cnt(int n)
 int get_sql_item_cnt()
 {
 	return sql_item_cnt;
+}
+
+char **bulk_space(int cnt, int size)
+{
+	/* bulk */
+	char **res = calloc(cnt, size);
+	int str_start = (int)((char *)res + str_offset(cnt));
+	int str_addr = str_start;
+
+	/* retail */
+	for (int i = 0; i < cnt; ++i) {
+		res[i] = (char *)str_addr;
+		str_addr += (size - PTR_SIZE);
+	}
+	return res;
+}
+
+char **bulk_expand(char **res, int cnt_orig, int size, int cnt)
+{
+	int ptrs = str_offset(cnt_orig);
+	char **res_large = bulk_space(cnt_orig + cnt, size);
+	memcpy(res_large, res, ptrs);
+	memcpy((char *)res_large + str_offset(cnt_orig + cnt), 
+	       (char *)res       + ptrs, 
+	        cnt_orig * (size - PTR_SIZE));
+	return res_large;
 }

@@ -31,4 +31,7 @@ extern int main_menu(void);
 /* transact.c */
 extern void *transact();
 
+/* sales.c */
+void *sales();
+
 #endif

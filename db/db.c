@@ -159,8 +159,8 @@ void *db_select_1_row(sqlite3 *handle, char *sql, int col, ...)
 				sqlite3_column_int(stmt, i);
 			break;
 		case SELECT_DOUBLE:
-			*va_arg(field, double *) = 
-				sqlite3_column_double(stmt, i);
+			*va_arg(field, float *) = 
+				(float)sqlite3_column_double(stmt, i);
 			break;
 		case SELECT_TEXT:
 			/* unique */

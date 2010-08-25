@@ -13,9 +13,6 @@
  * =====================================================================================
  */
 
-#include	<assert.h>
-#include	<stdlib.h>
-#include	<stdio.h>
 #include	"stack.h"
 
 
@@ -25,10 +22,10 @@
  *  Description:  whether the stack is empty
  * =====================================================================================
  */
-int stack_empty(stack_t * st_p)
+int stack_empty(stack_t *stk)
 {
-	assert(st_p);
-	return st_p->cnt == 0;                                  /* if empty, return 1 */
+	assert(stk);
+	return stk->cnt == 0;                                  /* if empty, return 1 */
 }
 
 /* 
@@ -37,13 +34,16 @@ int stack_empty(stack_t * st_p)
  *  Description:  make a new one, return the start addr
  * =====================================================================================
  */
-stack_t *stack_create()
+stack_t *stack_create(int cnt)
 {
-	stack_t * stk = (stack_t *) calloc(1, sizeof(stack_t));
+	stack_t *stk = calloc(1, sizeof (stack_t));
 	if (!stk) {
 		fprintf(stderr, "Calloc Stack Failure!\n");
 		/* exit(EXIT_FAILURE); */
 	}
+	stk->head = calloc(cnt, sizeof (struct elem));
+	stk->tail = stk->ptr = stk->head + cnt;
+	/* stk->cnt = 0; */
 	return stk;
 }
 
@@ -53,20 +53,20 @@ stack_t *stack_create()
  *  Description:  
  * =====================================================================================
  */
-void stack_push(stack_t *st_p, float x)             
+void stack_push(stack_t *stk, struct elem *x)             
 {                                                              
-	assert(st_p);                                           
-								
-	stack_n *tmp = (stack_n *) calloc(1, sizeof(stack_n));           
-	if (!tmp) {                                             
-		fprintf(stderr, "Calloc Stack stack_n Failure!\n");           
-		/* exit(EXIT_FAILURE); */
-	}                                                       
-								
-	tmp->x = x;                                             /* stack_n.x */
-	tmp->link = st_p->head;                                 /* stack_n.link */
-	st_p->head = tmp;                                       /* stack.head */
-	st_p->cnt++;                                            /* stack.cnt */
+	if (stk->head == stk->ptr) {
+		/* expand the stack */
+		int size = stk->cnt;
+		int copy_size = size * sizeof (struct elem);
+		struct elem *bak = stk->head;
+		stk->head = calloc(size * 2, sizeof (struct elem));
+		memcpy((char *)stk + copy_size, bak, copy_size);
+		stk->tail = (struct elem *)((char *)stk + copy_size);
+		free(bak);
+	}
+	*--stk->ptr = *x;
+	stk->cnt++;                                            /* stack.cnt */
 }                                                              
 
 /* 
@@ -75,26 +75,13 @@ void stack_push(stack_t *st_p, float x)
  *  Description:  return the poped one
  * =====================================================================================
  */
-float stack_pop(stack_t *st_p)
+struct elem *stack_pop(stack_t *stk)
 {
-	assert(st_p);
-	/* can't use it, if poped all, cnt ought to be 0 */
-	/* assert(st_p->cnt); */
-
-	if (!st_p->cnt) {
-		return 0;
+	if (!stk->cnt) {
+		return NULL;
 	}
-
-	stack_n *tmp = st_p->head;
-	float x = tmp->x;
-
-	st_p->head = st_p->head->link;                          /* stack.head */
-	st_p->cnt--;                                            /* stack.cnt */
-
-	free(tmp);                                              /* stack_n */
-	tmp = NULL;                                             /* make sure */
-	
-	return x;
+	stk->cnt--;                                            /* stack.cnt */
+	return stk->ptr++;
 }
 
 
@@ -104,24 +91,20 @@ float stack_pop(stack_t *st_p)
  *  Description:  free stack and all of nodes
  * =====================================================================================
  */
-void stack_free(stack_t * st_p)
+void stack_free(stack_t *stk)
 {
-	assert(st_p);
-
-	stack_n * current = st_p->head;
-	stack_n * next;
-
-        while (current) {                                       /* current is the flag */
-		next = current->link;
-		free(current);
-		current = next;
-	}
-
-	free(st_p);
-	st_p = NULL;
+	free(stk->head);
+	free(stk);
+	stk = NULL;
 }
 
-int get_stack_cnt(stack_t *stk)
+void stack_reset(stack_t *stk)
+{
+	stk->cnt = 0;
+	stk->ptr = stk->tail;
+}
+
+int stack_cnt(stack_t *stk)
 {
 	return stk->cnt;
 }

@@ -19,20 +19,33 @@
 #ifndef		STACK_H
 #define		STACK_H
 
-typedef struct stack_n {
-	float x;
-	struct stack_n *link;
-} stack_n;
+#include	<assert.h>
+#include	<stdlib.h>
+#include	<string.h>
+#include	<stdio.h>
+
+struct elem {
+	int id;	/* 4 + '\0' */
+	int stocks;
+	int qty;
+	float price;
+	float cost;
+	char name[50];
+};
 
 typedef struct stack_t {
 	int cnt;
-	stack_n *head;
+	struct elem *head;	/* static */
+	struct elem *tail;	/* static */
+	struct elem *ptr;	/* dynamic */
 } stack_t;
 
 extern int stack_empty(stack_t *);
-extern stack_t *stack_create();
-extern void stack_push(stack_t *, float);
-extern float stack_pop(stack_t *);
+extern stack_t *stack_create(int);
+extern void stack_push(stack_t *, struct elem *);
+extern struct elem *stack_pop(stack_t *);
 extern void stack_free(stack_t *);
+void stack_reset(stack_t *);
+extern int stack_cnt(stack_t *);
 
 #endif

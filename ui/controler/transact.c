@@ -19,7 +19,6 @@
 #include	"event.h"
 #include	"glue.h"
 
-static void *collect_money();
 static void *get_today_bill();
 
 

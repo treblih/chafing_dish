@@ -24,8 +24,8 @@
 #define		PTR_SIZE	sizeof (char *)
 #define		STR_LEN		64
 #define		ITEM_NUM	32
-#define		ITEM_SIZE	PTR_SIZE + STR_LEN
-#define		ITEM_BYTE	ITEM_SIZE * ITEM_NUM
+#define		ITEM_SIZE	(PTR_SIZE + STR_LEN)
+#define		ITEM_BYTE	(ITEM_SIZE * ITEM_NUM)
 
 	/* for get_date_time */
 #define		GET_DATE	0

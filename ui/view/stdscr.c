@@ -19,6 +19,7 @@ int ncurses_init()
 	/* cbreak(); */
         start_color();
         init_pair(1, COLOR_WHITE, COLOR_BLUE);
+        init_pair(2, COLOR_RED, COLOR_BLACK);
         curs_set(0);
 
 	/* essential */

@@ -23,7 +23,6 @@ static FUNCP kb_response[] = {
 	menu_direct,
 	NULL,
 	NULL,
-	NULL,
 	NULL
 };
 
@@ -43,11 +42,10 @@ void *get_today_bills()
 	 *  init variable menu
 	 *-----------------------------------------------------------------------------*/
         MENU *menu = new_menu(item);
-        menu_opts_off(menu, O_SHOWDESC);
+        menu_opts_off(menu, O_SHOWDESC | O_ROWMAJOR);
         set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 2, 0));
-	/* display in a sinlge col */
-        set_menu_format(menu, 10, 3);
+        set_menu_sub(menu, derwin(win, 0, 0, 2, 2));
+        set_menu_format(menu, LINES - 3, 6);
         post_menu(menu);
         wrefresh(win);
 

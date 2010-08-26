@@ -35,7 +35,6 @@ typedef struct WIDGET {
 	FUNCP direct;
 	FUNCP enter;
 	FUNCP backspace;
-	FUNCP dash;
 	FUNCP input;
 	int desc;		/* whether item's desc will be shown */
 } WIDGET;
@@ -69,12 +68,12 @@ enum DIRECTION {
 #define		RIGHT_YS	LEFT_YS
 #define		RIGHT_XS	25
 #define		RIGHT_Y		0
-#define		RIGHT_X		COLS - RIGHT_XS - 2
+#define		RIGHT_X		COLS - RIGHT_XS
 
 #define		MID_YS		LEFT_YS
-#define		MID_XS		COLS - LEFT_XS - RIGHT_XS - 4
+#define		MID_XS		COLS - LEFT_XS - RIGHT_XS - 2
 #define		MID_Y		0
-#define		MID_X		LEFT_XS + 2
+#define		MID_X		LEFT_XS + 1
 
 #define		NOTICE_YS	2
 #define		NOTICE_XS	COLS

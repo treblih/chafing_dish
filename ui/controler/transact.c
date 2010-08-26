@@ -39,13 +39,12 @@ static char *choice_desc[] = {
 static FUNCP event[] = {
 	sales,
 	get_today_bills,
-	ret_vgt
+	sales
 };
 
 static FUNCP kb_response_transact[] = {
 	menu_direct,
 	menu_enter,
-	NULL,
 	NULL,
 	NULL
 };
@@ -65,7 +64,6 @@ void *transact()
         set_menu_win(menu, w_right);
         set_menu_sub(menu, derwin(w_right, 0, 0, 2, 1));
 	set_menu_mark(menu, " * ");
-	box(w_right, ACS_CKBOARD, ACS_CKBOARD);
         post_menu(menu);
         wrefresh(w_right);
 

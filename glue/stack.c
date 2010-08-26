@@ -55,7 +55,7 @@ stack_t *stack_create(int cnt)
  */
 void stack_push(stack_t *stk, struct elem *x)             
 {                                                              
-	if (stk->head == stk->ptr) {
+	if (stk->ptr == stk->head) {
 		/* expand the stack */
 		int size = stk->cnt;
 		int copy_size = size * sizeof (struct elem);
@@ -95,7 +95,7 @@ void stack_free(stack_t *stk)
 {
 	free(stk->head);
 	free(stk);
-	stk = NULL;
+	stk->head = stk->tail = stk->ptr = NULL;
 }
 
 void stack_reset(stack_t *stk)

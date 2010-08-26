@@ -39,13 +39,13 @@ WIDGET *widget_init(WINDOW *win,
 	return widget;
 }
 
-int free_widget(WIDGET *widget, void **elem_arr, int cnt)
+int free_widget(WIDGET *widget, void **elems, int cnt)
 {
 	/* release_menu */
 	void *wid = widget->wid;
         widget->unpost(wid);
         for (int i = 0; i < cnt; ++i) {
-		widget->free_elem(elem_arr[i]);
+		widget->free_elem(elems[i]);
         }
 	widget->free_set(wid);
 	return 0;

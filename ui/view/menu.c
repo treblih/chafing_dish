@@ -69,7 +69,7 @@ void *menu_direct(MENU *menu, int direct, int desc)
 void *menu_enter(MENU *menu)
 {
 	FUNCP f = item_userptr(current_item(menu));
-	f();
+	f(menu);
 	/* pos_menu_cursor(menu); */
 	return NULL;
 }

@@ -26,6 +26,8 @@ int interact(WIDGET *widget)
 	void *wid = widget->wid;
 	int desc = widget->desc;
 
+	box(win, ACS_CKBOARD, ACS_CKBOARD);
+        wrefresh(win);
         while ((c = wgetch(win)) != '/') {
                 switch (c) {
 		case KEY_LEFT:
@@ -62,13 +64,7 @@ int interact(WIDGET *widget)
 			if (f = widget->backspace)
 				f(wid);
 			break;
-		case '-': /* 0x2d */
-			if (f = widget->dash)
-				f(wid);
-			break;
-			/* all printable chars */
-		case 0x20 ... 0x2c: 
-		case 0x2e ... 0x7e:
+		case 0x20 ... 0x7e: /* all printable chars */
 			if (f = widget->input)
 				f(wid, c);
 			break;

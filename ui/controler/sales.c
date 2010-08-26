@@ -22,8 +22,9 @@
 
 #define		FIELD_CNT	7
 #define		LEN		10
-#define		Y		15
-#define		X		6
+#define		Y		25
+#define		X		4
+#define		SURE_INVOCATION 1014
 
 enum FIELDS {
 	CLR_ALL,
@@ -38,27 +39,49 @@ enum FIELDS {
 /* func declaration */
 static void *var_reset();
 static int validation(FORM *);
-static void *clr_all(FORM *);
+static void *clr_all();
 static void *cancel(FORM *);
 static void *decode(FORM *);
-static void *discount(FORM *);
-static void *total(FORM *);
-static void *charge(FORM *);
+static void *field_input(FORM *);
+
+static void *input_core(FORM *, FUNCP);
+static void *discount(FORM *, double);
+static void *total(FORM *, double);
+static void *charge(FORM *, double);
 static void *sure(FORM *);
 static void *field_update(FIELD *, float);
 static void *menu_update();
-static void *update_table_menu();
+static void *restore_table_menu();
 static void *update_table_bill();
 
 
 /* local variables */
+static FUNCP event[] = {
+	clr_all,
+	cancel,
+	decode,
+	field_input,
+	field_input,
+	field_input,
+	sure,
+
+	/* 7 8 9 */
+	discount,
+	total,
+	charge
+};
+
 static FUNCP kb_response[] = {
 	form_direct,
 	form_enter,
 	form_backspace,
-	NULL,
 	form_input
 };
+
+static int in_out;
+static int plus;
+static int mins;
+
 	/*------------------------------------------------
 	 *  during the process we hold 2 data structure:
 	 *  1. char ** -- res -- idx
@@ -107,7 +130,7 @@ static int validation(FORM *form)
 	return E_OK;
 }
 
-static void *clr_all(FORM *form)
+static void *clr_all(FORM *form, int is_sure)
 {
 	if (!idx) {
 		print_notice("已经退完了，不给再退了");
@@ -115,7 +138,13 @@ static void *clr_all(FORM *form)
 		return NULL;
 	}
 
-	stack_reset(stk);
+	if (is_sure == SURE_INVOCATION) {
+		/* SURE invocation */
+		stack_reset(stk);
+	} else {
+		/* user invocation */
+		restore_table_menu();
+	}
 	for (; idx;) {
 		*res[--idx] = '\0';
 	}
@@ -145,9 +174,9 @@ static void *cancel(FORM *form)
 	struct elem *tmp = stack_pop(stk);
 	qty = tmp->qty;
 	sprintf(sql, 
-		"update menu set stocks = stocks + %d, acc = acc - %d \
+		"update menu set stocks = stocks %c %d, acc = acc %c %d \
 		 where id = %d",
-		qty, qty, tmp->id);
+		plus, qty, mins, qty, tmp->id);
 	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 
 	price_total -= (tmp->qty * tmp->price);
@@ -201,15 +230,16 @@ static void *decode(FORM *form)
 			     info.name, info.stocks);	
 	}
 	sprintf(sql, 
-		"update menu set stocks = stocks - %d, acc = acc + %d \
+		"update menu set stocks = stocks %c %d, acc = acc %c %d \
 		 where id = %d",
-		qty, qty, info.id);
+		mins, qty, plus, qty, info.id);
 	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 
 	form_driver(form, REQ_CLR_FIELD);
 	price_total += (info.price * info.qty);
 	cost_total += (info.cost * info.qty);
 	static int acc_num = ITEM_NUM;
+	
 	if (idx == acc_num) {
 		/* expand the items, + NUL */
 		ITEM **items_bak = items;
@@ -226,9 +256,10 @@ static void *decode(FORM *form)
 	}
 
 	/* store */
+	/* print_notice("%p", &info); */
 	stack_push(stk, &info);
 	sprintf(res[idx], "%-10s %d份  单价%4.1f  累计%5.1f", 
-			   info.name, info.qty, info.price, price_total);
+		info.name, info.qty, info.price, price_total);
 	field_update(fields[TOTAL], price_total);
 	menu_update();
 
@@ -241,42 +272,50 @@ static void *decode(FORM *form)
 	return NULL;
 }
 
-static void *discount(FORM *form)
+static void *field_input(FORM *form)
+{
+	int i = field_index(current_field(form));
+	input_core(form, event[1 + DISCOUNT + i]);
+	return NULL;
+}
+
+static void *input_core(FORM *form, FUNCP callback)
 {
 	if (E_INVALID_FIELD == validation(form)) {
 		return NULL;
 	}
 	const FIELD *field = current_field(form);
-	double dis = atof(field_buffer(field, 0)) / 10;
-	if (!dis) {
-		return NULL;
+	double data = atof(field_buffer(field, 0));
+	if (data) {
+		if (!callback(form, data)) {
+			form_driver(form, REQ_DOWN_FIELD);
+			form_driver(form, REQ_END_LINE);
+		}
 	}
-	field_update(fields[TOTAL], dis * price_total);
-	form_driver(form, REQ_DOWN_FIELD);
-	form_driver(form, REQ_END_LINE);
 	return NULL;
 }
 
-static void *total(FORM *form)
+static void *discount(FORM *form, double data)
 {
-	if (E_INVALID_FIELD == validation(form)) {
-		return NULL;
-	}
-	const FIELD *field = current_field(form);
-	double tmp = atof(field_buffer(field, 0));
-	if (!tmp) {
-		return NULL;
-	}
-	price_total = tmp;
-	form_driver(form, REQ_DOWN_FIELD);
-	form_driver(form, REQ_END_LINE);
+	data /= 10;
+	field_update(fields[TOTAL], data * price_total);
 	return NULL;
 }
 
-static void *charge(FORM *form)
+static void *total(FORM *form, double data)
 {
-	form_driver(form, REQ_DOWN_FIELD);
-	form_driver(form, REQ_END_LINE);
+	price_total = data;
+	return NULL;
+}
+
+static void *charge(FORM *form, double data)
+{
+	if (data < price_total)	 {
+		print_notice("他给的钱不够。。。");
+		form_driver(form, REQ_CLR_FIELD);
+		return (void *)1;
+	}
+	print_notice("找零 %.1f", data - price_total);
 	return NULL;
 }
 
@@ -286,9 +325,12 @@ static void *sure(FORM *form)
 		print_notice("还没买菜就急着付钱。。。");
 		return NULL;
 	}
+	if (!price_total) {
+		print_notice("不给钱怎么确定。。。");
+	}
 	/* update_table_menu(); */
 	update_table_bill();
-	clr_all(form);
+	clr_all(form, SURE_INVOCATION);
 	set_current_field(form, fields[DECODE]);
 	return NULL;
 }
@@ -309,83 +351,79 @@ static void *menu_update()
 		unpost_menu(menu);
 		free_menu(menu);
 	}
-	if (!items) {
-        	items = calloc(ITEM_NUM + 1, sizeof (ITEM *));
-	}
 	items[idx] = new_item(res[idx], NULL);
         menu = new_menu(items);
-        menu_opts_off(menu, O_SHOWDESC);
+        menu_opts_off(menu, O_ROWMAJOR | O_SHOWDESC);
+
 	WINDOW *w_mid = get_win(W_MID);
         set_menu_win(menu, w_mid);
-        set_menu_sub(menu, derwin(w_mid, 0, 0, 5, 2));
-        set_menu_format(menu, 20, 2);
+        set_menu_sub(menu, derwin(w_mid, 0, 0, 1, 25));
+        set_menu_format(menu, LINES - 3, 1);
 	post_menu(menu);
 	wrefresh(w_mid);
 	return NULL;
 }
 
-void *sales()
+void *sales(MENU *mn)
 {
+	/* index 0 - income, 2 - outcome */
+	in_out = item_index(current_item(mn));
+	if (in_out) {
+		plus = '-';
+		mins = '+';
+	} else {
+		plus = '+';
+		mins = '-';
+	}
+
 	int i;
 	WINDOW *w_right = get_win(W_RIGHT);
-
-	if (!fields) {
-        	fields = (FIELD **)calloc(FIELD_CNT + 1, sizeof (FIELD *));
+        fields = (FIELD **)calloc(FIELD_CNT + 1, sizeof (FIELD *));
+	/* create & set user ptr */
+	for (i = 0; i < FIELD_CNT; ++i) {
+		fields[i] = new_field(1, LEN, i * 2, 0, 0, 0);
+		set_field_userptr(fields[i], event[i]);
 	}
+	/* set attr */
 	for (i = 0; i < 2; ++i) {
-		/* 1 fields per 2 lines */
-		fields[i] = new_field(1, LEN, i, 0, 0, 0);
 		set_field_back(fields[i], COLOR_PAIR(1));
 		set_field_just(fields[i], JUSTIFY_LEFT);
 		field_opts_off(fields[i], O_EDIT | O_AUTOSKIP);  	
 		/* field_opts_off(fields[i], O_ACTIVE);  	 */
 	}
 	for (; i < 6; ++i) {
-		fields[i] = new_field(1, LEN, i, 0, 0, 0);
 		/* 1 - precision */
 		set_field_type(fields[i], TYPE_NUMERIC, 1, 0.0, 999.9);
-		if (i == 2) {
-			set_field_type(fields[i], TYPE_INTEGER, 4, 1, 9999);
-		}
-		set_field_back(fields[i], A_UNDERLINE);
 		set_field_just(fields[i], JUSTIFY_LEFT);
 		field_opts_off(fields[i], O_AUTOSKIP);  	
 	}
-
-	set_field_userptr(fields[CLR_ALL], clr_all);
-	set_field_userptr(fields[CANCEL], cancel);
-	set_field_userptr(fields[DECODE], decode);
-	set_field_userptr(fields[DISCOUNT], discount);
-	set_field_userptr(fields[TOTAL], total);
-	set_field_userptr(fields[CHARGE], charge);
-	set_field_userptr(fields[SURE], sure);
-		fields[i] = new_field(1, LEN, i, 0, 0, 0);
-		set_field_back(fields[i], COLOR_PAIR(1));
-		set_field_just(fields[i], JUSTIFY_LEFT);
-		field_opts_off(fields[i], O_AUTOSKIP);  	
-		field_opts_off(fields[i], O_EDIT);  	
+	set_field_type(fields[DECODE], TYPE_INTEGER, 4, 1, 9999);
+	set_field_back(fields[SURE], COLOR_PAIR(1));
+	set_field_just(fields[SURE], JUSTIFY_LEFT);
+	field_opts_off(fields[SURE], O_EDIT | O_AUTOSKIP);  	
 
         FORM *form = new_form(fields);
 	int rows, cols;
 	scale_form(form, &rows, &cols);
 
         set_form_win(form, w_right);
-        set_form_sub(form, derwin(w_right, rows, cols, Y, X));
+        set_form_sub(form, derwin(w_right, rows, cols, Y, X + 7));
         post_form(form);
         /* wrefresh(w_right); */
-	set_field_buffer(fields[0], 0, "取消全部");
-	set_field_buffer(fields[1], 0, "取消上一个");
-	set_field_buffer(fields[6], 0, "确定");
-	set_current_field(form, fields[2]);
+	set_field_buffer(fields[CLR_ALL], 0, "取消全部");
+	set_field_buffer(fields[CANCEL],  0, "取消上一个");
+	set_field_buffer(fields[SURE],    0, "确定");
+	set_current_field(form, fields[DECODE]);
 	/* DEL wouldn't be converted to REQ_PREV_FIELD */
 	form_opts_off(form, O_BS_OVERLOAD);
 
-	mvwprintw(w_right, Y + 2, 0, "代码");
-	mvwprintw(w_right, Y + 3, 0, "折扣");
-	mvwprintw(w_right, Y + 4, 0, "总价");
-	mvwprintw(w_right, Y + 5, 0, "收款");
+	mvwprintw(w_right, Y + DECODE   * 2, X, "代码");
+	mvwprintw(w_right, Y + DISCOUNT * 2, X, "折扣");
+	mvwprintw(w_right, Y + TOTAL    * 2, X, "总价");
+	mvwprintw(w_right, Y + CHARGE   * 2, X, "收款");
 	pos_form_cursor(form);
         wrefresh(w_right);
+	wrefresh(get_win(W_MID));
 
 	WIDGET *widget = widget_init(w_right, form,
 				     (FUNCP)unpost_form, 
@@ -400,11 +438,9 @@ void *sales()
 				 SELECT_TEXT, sql);
 		stocks_benchmark = atoi(sql);
 	}
-
-	if (!stk) { 
-		stk = stack_create(ITEM_NUM);
-		res = bulk_space(ITEM_NUM, ITEM_SIZE);
-	}
+	stk = stack_create(ITEM_NUM);
+	res = bulk_space(ITEM_NUM, ITEM_SIZE);
+	items = calloc(ITEM_NUM + 1, sizeof (ITEM *));
 
 	curs_set(1);
 	interact(widget);
@@ -418,6 +454,7 @@ void *sales()
 	free(res);
 	stack_free(stk);
 	unpost_menu(menu);
+	menu = NULL;		/* significant, make the static one back to 0 */
 	for (int i = 0; i < idx; ++i) {
 		free_item(items[i]);
 	}
@@ -427,7 +464,8 @@ void *sales()
 	return 0;
 }
 
-static void *update_table_menu()
+/* just for clear all */
+static void *restore_table_menu()
 {
 	char sql[100];
 	int qty;
@@ -435,9 +473,9 @@ static void *update_table_menu()
 	while (elem = stack_pop(stk)) {
  		qty = elem->qty;
 		sprintf(sql, 
-			"update menu set stocks = stocks - %d, acc = acc + %d \
+			"update menu set stocks = stocks %c %d, acc = acc %c %d \
 			 where id = %d",
-			qty, qty, elem->id);
+			plus, qty, mins, qty, elem->id);
 		sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 	}
 	return NULL;
@@ -445,21 +483,18 @@ static void *update_table_menu()
 
 static void *update_table_bill()
 {
+	if (in_out) {
+		price_total = 0 - price_total;
+		cost_total = 0 - cost_total;
+	}
 	char sql[100];
-#if 0
-	fprintf(stderr, "%s\r\n", get_date_time(GET_DATE));
-	fprintf(stderr, "%s\r\n", get_date_time(GET_TIME));
-	fprintf(stderr, "%.1f\r\n", price_total);
-	fprintf(stderr, "%.1f\r\n", cost_total);
-	__asm__ __volatile__("jmp .");
-#endif
-	char *err = calloc(1, 100);
+	/* char *err = calloc(1, 100); */
 	sprintf(sql, 
 		"insert into bill (date, time, sales, cost, profil) \
 		 values ('%s', '%s', %.1f, %.1f, %.1f)",
 		get_date_time(GET_DATE), get_date_time(GET_TIME),
 		price_total, cost_total, price_total - cost_total);
-	sqlite3_exec(get_db_main(), sql, 0, 0, &err);
+	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 	/* fprintf(stderr, "%s\r\n", err); */
 	return NULL;
 }

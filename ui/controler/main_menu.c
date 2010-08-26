@@ -57,7 +57,6 @@ static FUNCP kb_response[] = {
 	menu_direct,
 	menu_enter,
 	NULL,
-	NULL,		/* dash */
 	NULL		/* input */
 };
 
@@ -76,9 +75,7 @@ int main_menu()
         set_menu_win(menu, w_left);
         set_menu_sub(menu, derwin(w_left, 0, 0, 10, 1));
 	set_menu_mark(menu, " * ");
-	box(w_left, ACS_CKBOARD, ACS_CKBOARD);
         post_menu(menu);
-        wrefresh(w_left);
 
 	WIDGET *widget = widget_init(w_left, menu, 
 				     (FUNCP)unpost_menu, 

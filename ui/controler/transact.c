@@ -19,22 +19,27 @@
 #include	"event.h"
 #include	"glue.h"
 
-static void *get_today_bill();
-
+static void *ret_vgt()
+{
+	return NULL;
+}
 
 static char *choice[] = {
         "结帐",
         "今日账单查询",
+	"退菜"
 };
 
 static char *choice_desc[] = {
         "哇卡卡卡卡卡卡要收钱了",
         "查询消费明细/退选部分菜种",
+	"消费者有时可能需要小退几个菜"
 };
 
 static FUNCP event[] = {
 	sales,
-	get_today_bill
+	get_today_bills,
+	ret_vgt
 };
 
 static FUNCP kb_response_transact[] = {
@@ -45,56 +50,11 @@ static FUNCP kb_response_transact[] = {
 	NULL
 };
 
-static FUNCP kb_response_bills[] = {
-	menu_direct,
-	NULL,
-	NULL,
-	NULL,
-	NULL
-};
-
-
-static void *get_today_bill()
-{
-	char *date = get_date_time(GET_DATE);
-	char **bill_list = get_bill_list(date, USER);
-	/* get_sql_item_cnt() ought to be invocated after get_bill_list() */
-	int choice_n = get_sql_item_cnt();
-	WINDOW *win = get_win(W_MID);
-
-	/* no description, no attach funcion */
-	ITEM **item = item_initialize(bill_list, NULL, 
-				      NULL, choice_n, FP_SINGLE);
-
-	/*-----------------------------------------------------------------------------
-	 *  init variable menu
-	 *-----------------------------------------------------------------------------*/
-        MENU *menu = new_menu(item);
-        menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 2, 0));
-	/* display in a sinlge col */
-        set_menu_format(menu, 10, 3);
-        post_menu(menu);
-        wrefresh(win);
-
-	WIDGET *widget = widget_init(win, menu, 
-				     (FUNCP)unpost_menu, 
-				     (FUNCP)free_menu,
-				     (FUNCP)free_item,
-				     kb_response_bills, DESC_NO);
-	interact(widget);
-
-	/* free, including menu/items */
-	free_widget(widget, (void **)item, choice_n);
-	free_bill_list(bill_list);
-	return 0;
-}
 
 void *transact()
 {
 	int choice_n = ARRAY_SIZE(choice);
-	WINDOW *win = get_win(W_RIGHT);
+	WINDOW *w_right = get_win(W_RIGHT);
 	ITEM **item = item_initialize(choice, choice_desc, 
 			              event, choice_n, FP_ARRAY);
 	/*-----------------------------------------------------------------------------
@@ -102,14 +62,14 @@ void *transact()
 	 *-----------------------------------------------------------------------------*/
         MENU *menu = new_menu(item);
         menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 2, 0));
-	/* display in a sinlge col */
-        set_menu_format(menu, 10, 1);
+        set_menu_win(menu, w_right);
+        set_menu_sub(menu, derwin(w_right, 0, 0, 2, 1));
+	set_menu_mark(menu, " * ");
+	box(w_right, ACS_CKBOARD, ACS_CKBOARD);
         post_menu(menu);
-        wrefresh(win);
+        wrefresh(w_right);
 
-	WIDGET *widget = widget_init(win, menu,
+	WIDGET *widget = widget_init(w_right, menu,
 				     (FUNCP)unpost_menu, 
 				     (FUNCP)free_menu,
 				     (FUNCP)free_item,

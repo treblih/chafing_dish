@@ -22,7 +22,7 @@ int interact(WIDGET *widget)
 {
 	int c;
 	FUNCP f;
-	WINDOW *win = get_attach_win(widget);
+	WINDOW *win = widget->win;
 	void *wid = widget->wid;
 	int desc = widget->desc;
 
@@ -46,7 +46,17 @@ int interact(WIDGET *widget)
 			break;
 		case 10: /* Enter */
 			if (f = widget->enter)
+				/* clear me, waiting for a forward set */
+				wborder(win, ' ', ' ', ' ', ' ', 
+					     ' ', ' ', ' ', ' ');
+				wrefresh(win);
+
+				/* back here */
 				f(wid);
+
+				/* back to me, set myself again */
+				box(win, ACS_CKBOARD, ACS_CKBOARD);
+				wrefresh(win);
 			break;
 		case 0x7f:  /* Backspace */
 			if (f = widget->backspace)
@@ -66,5 +76,9 @@ int interact(WIDGET *widget)
 			break;
                 }
         }
+	/* clear me, waiting for a backward set */
+	wborder(win, ' ', ' ', ' ', ' ', 
+		     ' ', ' ', ' ', ' ');
+	wrefresh(win);
 	return 0;
 }

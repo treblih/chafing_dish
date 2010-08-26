@@ -25,11 +25,13 @@ extern int interact(WIDGET *);
 extern void *manage(void);
 extern void *practice(void);
 extern void *bug_report(void);
-extern void *logout(void);
 extern int main_menu(void);
 
 /* transact.c */
 extern void *transact();
+
+/* get_today_bills.c */
+extern void *get_today_bills();
 
 /* sales.c */
 void *sales();

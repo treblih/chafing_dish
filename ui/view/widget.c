@@ -50,8 +50,3 @@ int free_widget(WIDGET *widget, void **elem_arr, int cnt)
 	widget->free_set(wid);
 	return 0;
 }
-
-WINDOW *get_attach_win(WIDGET *widget)
-{
-	return widget->win;
-}

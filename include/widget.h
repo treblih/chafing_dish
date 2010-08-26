@@ -62,7 +62,7 @@ enum DIRECTION {
  *  all windows coordinates
  *-----------------------------------------------------------------------------*/
 #define		LEFT_YS		LINES - 3
-#define		LEFT_XS		15
+#define		LEFT_XS		18
 #define		LEFT_Y		0
 #define		LEFT_X		0
 
@@ -116,7 +116,6 @@ extern int ncurses_init(void);
 extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 
 		                             FUNCP *, int);
 extern int free_widget(WIDGET *, void **, int);
-extern WINDOW *get_attach_win(WIDGET *);
 
 /* win.c */
 extern int win_init(void);

@@ -47,7 +47,7 @@ static void *charge(FORM *);
 static void *sure(FORM *);
 static void *field_update(FIELD *, float);
 static void *menu_update();
-static void *update_table_menu(struct elem *);
+static void *update_table_menu();
 static void *update_table_bill();
 
 
@@ -133,13 +133,23 @@ static void *clr_all(FORM *form)
 
 static void *cancel(FORM *form)
 {
+	char sql[100];
+	int qty;
 	if (!idx) {
 		print_notice("已经退完了，不给再退了");
 		pos_form_cursor(form);
 		return NULL;
 	}
+
 	*res[--idx] = '\0';
 	struct elem *tmp = stack_pop(stk);
+	qty = tmp->qty;
+	sprintf(sql, 
+		"update menu set stocks = stocks + %d, acc = acc - %d \
+		 where id = %d",
+		qty, qty, tmp->id);
+	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
+
 	price_total -= (tmp->qty * tmp->price);
 	cost_total  -= (tmp->qty * tmp->cost);
 	/* fields reset */
@@ -154,18 +164,21 @@ static void *cancel(FORM *form)
 
 static void *decode(FORM *form)
 {
+	int qty;
 	char code[5] = {0};
 	int id;
 	char sql[100];
 	if (E_INVALID_FIELD == validation(form)) {
 		return NULL;
 	}
+	/* clear w_notice */
+	print_notice("");
 	const FIELD *field = current_field(form);
 	memcpy(code, field_buffer(field, 0), 4);
 	/* 2013 = 201 * 3 */
 	id = atoi(code);
 	info.id  = id / 10;
-	info.qty = id % 10;
+	info.qty = qty = id % 10;
 	sprintf(sql, 
 	       "select name, price, cost, stocks from menu where id = %d",
 		info.id);
@@ -187,6 +200,11 @@ static void *decode(FORM *form)
 			     "可能是数据未及时更新，所以我不会否决该笔交易", 
 			     info.name, info.stocks);	
 	}
+	sprintf(sql, 
+		"update menu set stocks = stocks - %d, acc = acc + %d \
+		 where id = %d",
+		qty, qty, info.id);
+	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 
 	form_driver(form, REQ_CLR_FIELD);
 	price_total += (info.price * info.qty);
@@ -268,10 +286,7 @@ static void *sure(FORM *form)
 		print_notice("还没买菜就急着付钱。。。");
 		return NULL;
 	}
-	struct elem *elem;
-	while (elem = stack_pop(stk)) {
-		update_table_menu(elem);
-	}
+	/* update_table_menu(); */
 	update_table_bill();
 	clr_all(form);
 	set_current_field(form, fields[DECODE]);
@@ -323,7 +338,6 @@ void *sales()
 		set_field_back(fields[i], COLOR_PAIR(1));
 		set_field_just(fields[i], JUSTIFY_LEFT);
 		field_opts_off(fields[i], O_EDIT | O_AUTOSKIP);  	
-		/* field_opts_off(fields[i], O_EDIT);  	 */
 		/* field_opts_off(fields[i], O_ACTIVE);  	 */
 	}
 	for (; i < 6; ++i) {
@@ -413,17 +427,19 @@ void *sales()
 	return 0;
 }
 
-static void *update_table_menu(struct elem *elem)
+static void *update_table_menu()
 {
 	char sql[100];
-	char *err = calloc(1, 100);
-	int qty = elem->qty;
-	sprintf(sql, 
-		"update menu set stocks = stocks - %d, acc = acc + %d \
-		 where id = %d",
-		qty, qty, elem->id);
-	sqlite3_exec(get_db_main(), sql, 0, 0, &err);
-	/* fprintf(stderr, "%s\r\n", err); */
+	int qty;
+	struct elem *elem;
+	while (elem = stack_pop(stk)) {
+ 		qty = elem->qty;
+		sprintf(sql, 
+			"update menu set stocks = stocks - %d, acc = acc + %d \
+			 where id = %d",
+			qty, qty, elem->id);
+		sqlite3_exec(get_db_main(), sql, 0, 0, 0);
+	}
 	return NULL;
 }
 
@@ -447,4 +463,3 @@ static void *update_table_bill()
 	/* fprintf(stderr, "%s\r\n", err); */
 	return NULL;
 }
-

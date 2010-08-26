@@ -31,25 +31,19 @@ void *bug_report()
 {
 	return NULL;
 }
-void *logout()
-{
-	return (void *)1;
-}
 
 static char *choice[] = {
         "面向客户",
         "面向老板",
         "无痛练习",
 	"发送BUG报告",
-        "退出"
 };
 
 static char *choice_desc[] = {
-        "结帐/查询今日记录",
+        "结帐/退菜/查询今日记录",
         "数据查询/分析/管理，需要管理员权限",
         "依据现有数据练习软件操作，结果不会更新进数据库",
 	"自动发送记录系统错误文件",
-        "退出"
 };
 
 static FUNCP event[] = {
@@ -57,7 +51,6 @@ static FUNCP event[] = {
 	manage,
 	practice,
 	bug_report,
-	logout
 };
 
 static FUNCP kb_response[] = {
@@ -71,7 +64,7 @@ static FUNCP kb_response[] = {
 int main_menu()
 {
 	int choice_n = ARRAY_SIZE(choice);
-	WINDOW *win = get_win(W_LEFT);
+	WINDOW *w_left = get_win(W_LEFT);
 	ITEM **item = item_initialize(choice, choice_desc, 
 			        event, choice_n, FP_ARRAY);
 
@@ -80,19 +73,18 @@ int main_menu()
 	 *-----------------------------------------------------------------------------*/
         MENU *menu = new_menu(item);
         menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, win);
-        set_menu_sub(menu, derwin(win, 0, 0, 10, 0));
-	/* display in a sinlge col */
-        set_menu_format(menu, 10, 1);
+        set_menu_win(menu, w_left);
+        set_menu_sub(menu, derwin(w_left, 0, 0, 10, 1));
+	set_menu_mark(menu, " * ");
+	box(w_left, ACS_CKBOARD, ACS_CKBOARD);
         post_menu(menu);
-        wrefresh(win);
+        wrefresh(w_left);
 
-	WIDGET *widget = widget_init(win, menu, 
+	WIDGET *widget = widget_init(w_left, menu, 
 				     (FUNCP)unpost_menu, 
 				     (FUNCP)free_menu,
 				     (FUNCP)free_item,
 			             kb_response, DESC_NOTICE);
-
 	interact(widget);
 
 	/* free, including menu/items */

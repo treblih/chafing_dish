@@ -18,11 +18,15 @@
 #ifndef		EVENT_H
 #define		EVENT_H
 
+#define		LEN		10
+#define		Y		25
+#define		X		4
+
 /* event.c */
 extern int interact(WIDGET *);
+extern void *nothing();
 
 /* main_menu.c */
-extern void *manage(void);
 extern void *practice(void);
 extern void *bug_report(void);
 extern void *main_menu(void);
@@ -36,8 +40,8 @@ extern void *get_today_bills(MENU *);
 /* sales.c */
 extern void *sales();
 
-/* manage.c */
-extern void *manage();
+/* passwd.c */
+extern void *passwd();
 
 /* data_analyse.c */
 extern void *data_analyse();

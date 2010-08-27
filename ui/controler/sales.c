@@ -21,9 +21,6 @@
 #include	"stack.h"
 
 #define		FIELD_CNT	7
-#define		LEN		10
-#define		Y		25
-#define		X		4
 #define		SURE_INVOCATION 1014
 
 enum FIELDS {

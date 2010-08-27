@@ -31,7 +31,7 @@ enum SELECT {
 	SELECT_DOUBLE,
 	SELECT_TEXT	
 };
-extern	char **db_select(sqlite3 *, char *, int, ...);
+extern	char **db_select(sqlite3 *, char *, int, int *);
 extern  void *db_select_1_row(sqlite3 *, char *, int, ...);
 
 #define		str_offset(n)	(n) * PTR_SIZE

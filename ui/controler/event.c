@@ -78,3 +78,8 @@ int interact(WIDGET *widget)
 	wrefresh(win);
 	return 0;
 }
+
+void *nothing()
+{
+	return NULL;
+}

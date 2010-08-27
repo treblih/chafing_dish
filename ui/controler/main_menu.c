@@ -44,7 +44,7 @@ static char *choice_desc[] = {
 
 static FUNCP userptr[] = {
 	transact,
-	manage,
+	passwd,
 	practice,
 	bug_report,
 };

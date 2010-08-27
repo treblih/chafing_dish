@@ -45,7 +45,6 @@ static int init(const char *filename, sqlite3 **addr)
         return EXIT_SUCCESS;
 }
 
-
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  db_select
@@ -54,7 +53,7 @@ static int init(const char *filename, sqlite3 **addr)
  *  		  when done, remember to FREE
  * =====================================================================================
  */
-char **db_select(sqlite3 *handle, char *sql, int col, ...)
+char **db_select(sqlite3 *handle, char *sql, int col, int *col_type)
 {
 	/*-----------------------------------------------------------------------------
 	 *  res will contain the format string
@@ -69,7 +68,6 @@ char **db_select(sqlite3 *handle, char *sql, int col, ...)
 	char **res = bulk_space(ITEM_NUM, ITEM_SIZE);
 	char **res_large;
 	char *tmp = calloc(STR_LEN * 4, 1);
-	va_list field;
         sqlite3_stmt *stmt;
 
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
@@ -82,10 +80,11 @@ char **db_select(sqlite3 *handle, char *sql, int col, ...)
 	 *-----------------------------------------------------------------------------*/
 sql2str:
 	for (; sqlite3_step(stmt) != SQLITE_DONE && i < acc_num; ++i) {
-        	va_start(field, col);
+        	/* va_start(field, col); */
 		total = 0;
                 for (int j = 0; j < col; ++j) {
-			type = va_arg(field, int);
+			/* type = va_arg(field, int); */
+			type = col_type[j];
 			switch (type) {
 			case SELECT_INT:
                         	cnt = sprintf(tmp, "%d ", 
@@ -134,7 +133,6 @@ sql2str:
                 fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
         }
 	free(tmp);
-	va_end(field);
         return res;
 }
 

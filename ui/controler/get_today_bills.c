@@ -19,36 +19,26 @@
 #include	"event.h"
 #include	"glue.h"
 
-
-static void *nothing();
-
-static menu_t mt = {
-	.ys = 0, .xs = 0, .y = 2,
-	.format_x = 6,
-	.userptr_arr = FP_SINGLE,
-	.desc_notice = DESC_NO,
-	.choice_desc = NULL,
-	.opts_off = O_SHOWDESC | O_ROWMAJOR,
-	/* if all items use 1 userptr */
-	.userptr = (FUNCP *)nothing,
-};
-
-static void *nothing()
-{
-	return NULL;
-}
-
 void *get_today_bills(MENU *menu)
 {
 	int i = item_index(current_item(menu));
 	char *date = get_date_time(GET_DATE);
-	char **bill_list = get_bill_list(date, i);
-	/* get_sql_item_cnt() ought to be invocated after get_bill_list() */
-	mt.x = i + 4;
-	mt.choice = bill_list;
-	mt.choice_n = get_sql_item_cnt();
-	mt.win = get_win(W_MID);
-	mt.format_y = LINES - 3;
+	char sql[100];
+	char **bill_list;
+
+	if (i) {
+		sprintf(sql, "select time, sales from bill where date = '%s'", date);
+		bill_list = query(2, 6, sql, 2, SELECT_TEXT, SELECT_DOUBLE);
+	} else {
+		sprintf(sql, 
+		       "select time, sales, cost, profil from bill where date = '%s'", 
+		        date);
+		bill_list = query(20, 2, sql, 4, 
+				  SELECT_TEXT, 
+				  SELECT_DOUBLE,
+				  SELECT_DOUBLE,
+				  SELECT_DOUBLE);
+	}
 
 	/* i == 0 => ADMIN invocation */
 	if (!i) {
@@ -73,8 +63,6 @@ void *get_today_bills(MENU *menu)
 			     cost_total,
 			     profil_total);
 	}
-	menu_create(&mt);
-	free_bill_list(bill_list);
+	free(bill_list);
 	return 0;
 }
-

@@ -35,14 +35,13 @@ extern 	char *get_date_time(int);
 	/* for get_bill_list */
 #define		ADMIN		0
 #define		USER		1
-extern	char **get_bill_list(char *, int);
 
-extern	void free_bill_list(char **);
 extern	void set_sql_item_cnt(int);
 extern	int get_sql_item_cnt();
 extern	char **bulk_space(int, int);
 extern	char **bulk_expand(char **, int, int, int);
 extern	void *spc2zr(char *);
 extern  char *strdelim(char *, int, char **);
+extern	char **query(int, int, char *, int, ...);
 
 #endif

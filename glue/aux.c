@@ -56,31 +56,6 @@ char *get_date_time(int req)
 	return hm;
 }
 
-char **get_bill_list(char *date, int privilege)
-{
-	/* be careful, on stack */
-	char sql[100];
-	if (privilege == USER) {
-		sprintf(sql, "select time, sales from bill where date = '%s'", 
-			date);
-		return db_select(get_db_main(), sql, 2,
-			      SELECT_TEXT,
-			      SELECT_DOUBLE);
-	}
-	sprintf(sql, "select time, sales, cost, profil from bill where date = '%s'", 
-		date);
-	return db_select(get_db_main(), sql, 4,
-			 SELECT_TEXT,
-			 SELECT_DOUBLE,
-			 SELECT_DOUBLE,
-			 SELECT_DOUBLE);
-}
-
-void free_bill_list(char **res)
-{
-	free(res);
-}
-
 void set_sql_item_cnt(int n)
 {
 	sql_item_cnt = n;

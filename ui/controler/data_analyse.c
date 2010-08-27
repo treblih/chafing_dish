@@ -17,6 +17,7 @@
 
 #include	"widget.h"
 #include	"event.h"
+#include	"glue.h"
 
 static char *choice[] = {
         "今日详细账单",
@@ -32,10 +33,17 @@ static char *choice_desc[] = {
 
 static void *popular()
 {
+	free(query(20, 1, 
+		  "select id, name, acc from menu order by acc desc limit 20", 
+		   3, SELECT_INT, SELECT_TEXT, SELECT_INT));
 	return NULL;
 }
+
 static void *lack()
 {
+	free(query(20, 1, 
+	          "select id, name, stocks from menu order by stocks limit 20",
+	           3, SELECT_INT, SELECT_TEXT, SELECT_INT));
 	return NULL;
 }
 

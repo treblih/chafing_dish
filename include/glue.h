@@ -43,5 +43,7 @@ extern	char **bulk_expand(char **, int, int, int);
 extern	void *spc2zr(char *);
 extern  char *strdelim(char *, int, char **);
 extern	char **query(int, int, char *, int, ...);
+extern	void *db_manager();
+extern	void *list2file(char **);
 
 #endif

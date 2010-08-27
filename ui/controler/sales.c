@@ -316,6 +316,7 @@ static void *sure(FORM *form)
 	}
 	/* update_table_menu(); */
 	update_table_bill();
+	list2file(res);
 	clr_all(form, SURE_INVOCATION);
 	set_current_field(form, fields[DECODE]);
 	return NULL;

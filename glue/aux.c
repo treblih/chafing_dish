@@ -16,6 +16,7 @@
  */
 
 #include	"glue.h"
+#include	<errno.h>
 
 
 static int sql_item_cnt;
@@ -126,4 +127,31 @@ char *strdelim(char *str, int ch, char **saveptr)
 		}
 	}
 	return str;
+}
+
+void *db_manager()
+{
+	/* redirect stdout/stderr to /dev/null */
+	system("sqliteman ~/chafing/chafing.db >& /dev/null");
+	return NULL; 
+}
+
+void *list2file(char **list)
+{
+	int i = 0;
+	char path[50];
+	char time[6];
+	strncpy(time, get_date_time(GET_TIME), 5);
+	time[5] = '\0';
+	time[2] = '_';		/* 15:54 -> 15_54 */
+
+	sprintf(path, "ch%s.txt", time);
+	FILE *fp = fopen(path, "a");
+	fprintf(stderr, "%d\r\n", errno);
+	perror("fopen");
+	while (*list[i]) {
+		fprintf(fp, "%s\n", list[i++]);
+	}
+	fclose(fp);
+	return NULL;
 }

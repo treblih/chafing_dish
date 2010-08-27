@@ -95,6 +95,7 @@ static void *check(FORM *form)
 		form_driver(form, REQ_CLR_FIELD);
 	} else {
 		print_notice("您确实是老板");
+		curs_set(0);
 		data_analyse();
 	}
 	return NULL;

@@ -22,13 +22,15 @@
 static char *choice[] = {
         "今日详细账单",
         "最火爆菜种",
-	"最少库存"
+	"最少库存",
+	"进入数据库"
 };
 
 static char *choice_desc[] = {
         "今日清单及营收统计",
         "前20",
-	"需要尽快补货"
+	"需要尽快补货",
+	"启动可视化数据库管理软件，可直接管理数据"
 };
 
 static void *popular()
@@ -50,7 +52,8 @@ static void *lack()
 static FUNCP userptr[] = {
 	get_today_bills,
 	popular,
-	lack
+	lack,
+	db_manager
 };
 
 static menu_t mt = {

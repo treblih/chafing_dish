@@ -10,6 +10,8 @@
 *.bin
 *.o
 *.elf
+*.txt
+*.log
 tmp
 ma
 

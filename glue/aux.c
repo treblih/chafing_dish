@@ -138,3 +138,17 @@ void *spc2zr(char *str)
 	}
 	return NULL;
 }
+
+char *strdelim(char *str, int ch, char **saveptr)
+{
+	int i = 0;
+	while (*str != '\0') {
+		if (*str == ch) {
+			*str++ = '\0';
+			saveptr[i++] = str;
+		} else {
+			++str;
+		}
+	}
+	return str;
+}

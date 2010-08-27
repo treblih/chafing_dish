@@ -31,12 +31,15 @@ extern void *main_menu(void);
 extern void *transact();
 
 /* get_today_bills.c */
-extern void *get_today_bills();
+extern void *get_today_bills(MENU *);
 
 /* sales.c */
 extern void *sales();
 
 /* manage.c */
 extern void *manage();
+
+/* data_analyse.c */
+extern void *data_analyse();
 
 #endif

@@ -99,7 +99,7 @@ static void *passwd(FORM *form)
 		form_driver(form, REQ_CLR_FIELD);
 	} else {
 		print_notice("您确实是老板");
-		/* data_analyse(); */
+		data_analyse();
 	}
 	return NULL;
 }

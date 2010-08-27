@@ -38,7 +38,6 @@ enum FIELDS {
 
 /* func declaration */
 static void *var_reset();
-static int validation(FORM *);
 static void *clr_all();
 static void *cancel(FORM *);
 static void *decode(FORM *);
@@ -120,16 +119,6 @@ static void *var_reset()
 	return NULL;
 }
 
-static int validation(FORM *form) 
-{
-	if (E_INVALID_FIELD == form_driver(form, REQ_VALIDATION)) {
-		print_notice("输入非法啊大哥，重来");
-		form_driver(form, REQ_CLR_FIELD);
-		return E_INVALID_FIELD;
-	}
-	return E_OK;
-}
-
 static void *clr_all(FORM *form, int is_sure)
 {
 	if (!idx) {
@@ -197,7 +186,7 @@ static void *decode(FORM *form)
 	char code[5] = {0};
 	int id;
 	char sql[100];
-	if (E_INVALID_FIELD == validation(form)) {
+	if (E_INVALID_FIELD == form_validation(form)) {
 		return NULL;
 	}
 	/* clear w_notice */
@@ -281,7 +270,7 @@ static void *field_input(FORM *form)
 
 static void *input_core(FORM *form, FUNCP callback)
 {
-	if (E_INVALID_FIELD == validation(form)) {
+	if (E_INVALID_FIELD == form_validation(form)) {
 		return NULL;
 	}
 	const FIELD *field = current_field(form);

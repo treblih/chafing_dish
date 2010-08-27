@@ -51,3 +51,13 @@ void *form_backspace(FORM *form)
 	form_driver(form, REQ_DEL_PREV);
 	return NULL;
 }
+
+int form_validation(FORM *form) 
+{
+	if (E_INVALID_FIELD == form_driver(form, REQ_VALIDATION)) {
+		print_notice("输入非法啊大哥，重来");
+		form_driver(form, REQ_CLR_FIELD);
+		return E_INVALID_FIELD;
+	}
+	return E_OK;
+}

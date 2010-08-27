@@ -19,10 +19,6 @@
 #include	"event.h"
 
 
-void *manage()
-{
-	return NULL;
-}
 void *practice()
 {
 	return NULL;
@@ -46,45 +42,27 @@ static char *choice_desc[] = {
 	"自动发送记录系统错误文件",
 };
 
-static FUNCP event[] = {
+static FUNCP userptr[] = {
 	transact,
 	manage,
 	practice,
 	bug_report,
 };
 
-static FUNCP kb_response[] = {
-	menu_direct,
-	menu_enter,
-	NULL,
-	NULL		/* input */
+static menu_t mt = {
+	.ys = 0, .xs = 0, .y = 10, .x = 1,
+	.userptr_arr = FP_ARRAY,
+	.desc_notice = DESC_NOTICE,
+	.choice = choice,
+	.choice_desc = choice_desc,
+	.mark = " * ",
+	.opts_off = O_SHOWDESC,
+	.userptr = userptr,
 };
 
-int main_menu()
+void *main_menu()
 {
-	int choice_n = ARRAY_SIZE(choice);
-	WINDOW *w_left = get_win(W_LEFT);
-	ITEM **item = item_initialize(choice, choice_desc, 
-			        event, choice_n, FP_ARRAY);
-
-	/*-----------------------------------------------------------------------------
-	 *  init variable menu
-	 *-----------------------------------------------------------------------------*/
-        MENU *menu = new_menu(item);
-        menu_opts_off(menu, O_SHOWDESC);
-        set_menu_win(menu, w_left);
-        set_menu_sub(menu, derwin(w_left, 0, 0, 10, 1));
-	set_menu_mark(menu, " * ");
-        post_menu(menu);
-
-	WIDGET *widget = widget_init(w_left, menu, 
-				     (FUNCP)unpost_menu, 
-				     (FUNCP)free_menu,
-				     (FUNCP)free_item,
-			             kb_response, DESC_NOTICE);
-	interact(widget);
-
-	/* free, including menu/items */
-	free_widget(widget, (void **)item, choice_n);
-	return 0;
+	mt.choice_n = ARRAY_SIZE(choice);
+	mt.win = get_win(W_LEFT);
+	return menu_create(&mt);
 }

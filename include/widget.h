@@ -38,7 +38,21 @@ typedef struct WIDGET {
 	FUNCP input;
 	int desc;		/* whether item's desc will be shown */
 } WIDGET;
-#define		WIDGET_FUNC_CNT		5
+#define		WIDGET_FUNC_CNT		4
+
+typedef struct menu_t {
+	int ys, xs, y, x;
+	int format_y, format_x;
+	int userptr_arr;
+	int choice_n;
+	int desc_notice;
+	char **choice;
+	char **choice_desc;
+	const char *mark;
+	Menu_Options opts_off;
+	FUNCP *userptr;
+	WINDOW *win;
+} menu_t;
 
 
 enum WIN_LAYOUT {
@@ -98,14 +112,14 @@ enum DIRECTION {
 
 /* menu.c */
 extern ITEM **item_initialize(char **, char **, FUNCP *, int, int);
-extern void *menu_direct(MENU *, int, int);
-extern void *menu_enter(MENU *);
+extern void *menu_create(menu_t *);
 
 /* form.c */
 extern void *form_direct(FORM *, int, int);
 extern void *form_enter(FORM *);
 extern void *form_input(FORM *, int);
 extern void *form_backspace(FORM *);
+extern int form_validation(FORM *);
 
 /* stdscr.c */
 extern int ui_init(void);

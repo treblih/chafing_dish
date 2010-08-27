@@ -42,5 +42,6 @@ extern	void set_sql_item_cnt(int);
 extern	int get_sql_item_cnt();
 extern	char **bulk_space(int, int);
 extern	char **bulk_expand(char **, int, int, int);
+extern	void *spc2zr(char *);
 
 #endif

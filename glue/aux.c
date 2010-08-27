@@ -124,3 +124,17 @@ char **bulk_expand(char **res, int cnt_orig, int size, int cnt)
 	        cnt_orig * (size - PTR_SIZE));
 	return res_large;
 }
+
+void *spc2zr(char *str)
+{
+	int ch;
+	while ((ch = *str) != '\0') {
+		if (ch == 0x20) {
+			*str = '\0';
+			return NULL;
+		} else {
+			++str;
+		}
+	}
+	return NULL;
+}

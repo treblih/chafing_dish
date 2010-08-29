@@ -30,6 +30,7 @@
 	/* for get_date_time */
 #define		GET_DATE	0
 #define		GET_TIME	1
+#define		GET_WDAY	2
 extern 	char *get_date_time(int);
 
 	/* for get_bill_list */
@@ -42,8 +43,9 @@ extern	char **bulk_space(int, int);
 extern	char **bulk_expand(char **, int, int, int);
 extern	void *spc2zr(char *);
 extern  char *strdelim(char *, int, char **);
-extern	char **query(int, int, char *, int, ...);
-extern	void *db_manager();
 extern	void *list2file(char **);
+
+#define		PTHREAD_NUM	1
+extern	pthread_t *get_pthread_t(int);
 
 #endif

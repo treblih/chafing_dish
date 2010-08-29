@@ -18,8 +18,8 @@
 #include	"glue.h"
 #include	<errno.h>
 
-
 static int sql_item_cnt;
+static pthread_t pt[PTHREAD_NUM];
 
 
 /* 
@@ -31,9 +31,14 @@ static int sql_item_cnt;
 char *get_date_time(int req)
 {
 	static char date[11];	/* 10 + '\0' */
+	static char wday[11];
 	static char hm[6];	/* 5 + '\0' */
+
 	if (req == GET_DATE && *date) {		/* date will always be true, *date */
 		return date;
+	}
+	if (req == GET_WDAY && *wday) {
+		return wday;
 	}
 
 	/*-----------------------------------------------------------------------------
@@ -44,17 +49,33 @@ char *get_date_time(int req)
 	time(&timep); 
 	p = gmtime(&timep); 
 
-	if (req == GET_DATE) {
+	switch (req) {
+	case GET_DATE:
 		sprintf(date, "%d/%.2d/%.2d",
 			p->tm_year + 1900,
 			p->tm_mon + 1,
 			p->tm_mday);
 		return date;
+	case GET_TIME:
+		sprintf(hm, "%.2d:%.2d",
+			p->tm_hour,
+			p->tm_min);
+		return hm;
+	case GET_WDAY:
+		switch (p->tm_wday) {
+		case 0:
+			sprintf(wday, "周日");
+			break;
+		case 1 ... 6:
+			sprintf(wday, "周%d", p->tm_wday);
+			break;
+		default:
+			break;
+		}
+		return wday;
+	default:
+		break;
 	}
-	sprintf(hm, "%.2d:%.2d",
-		p->tm_hour,
-		p->tm_min);
-	return hm;
 }
 
 void set_sql_item_cnt(int n)
@@ -129,13 +150,6 @@ char *strdelim(char *str, int ch, char **saveptr)
 	return str;
 }
 
-void *db_manager()
-{
-	/* redirect stdout/stderr to /dev/null */
-	system("sqliteman ~/chafing/chafing.db >& /dev/null");
-	return NULL; 
-}
-
 void *list2file(char **list)
 {
 	int i = 0;
@@ -154,4 +168,9 @@ void *list2file(char **list)
 	}
 	fclose(fp);
 	return NULL;
+}
+
+pthread_t *get_pthread_t(int idx)
+{
+	return &pt[idx];
 }

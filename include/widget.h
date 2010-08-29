@@ -19,6 +19,8 @@
 #define		WIDGET_H
 
 #include	<stdlib.h>
+#include	<pthread.h>
+#include	<unistd.h>
 #include	<menu.h>
 #include	<form.h>
 
@@ -124,6 +126,7 @@ extern int form_validation(FORM *);
 /* stdscr.c */
 extern int ui_init(void);
 extern int ncurses_init(void);
+extern void *statbar_init();
 
 /* widget.c */
 extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 
@@ -134,5 +137,6 @@ extern int free_widget(WIDGET *, void **, int);
 extern int win_init(void);
 extern WINDOW *get_win(int);
 extern int print_notice(const char *, ...);
+
 
 #endif

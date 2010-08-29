@@ -45,7 +45,10 @@ int ncurses_init()
         init_pair(2, COLOR_RED, COLOR_BLACK);
         curs_set(0);
 
-	/* essential */
+	/*-----------------------------------------------------------------------------
+	 *  essential, a bug in ncurses-5.7.4
+	 *  need at least one refresh() before any wrefresh()
+	 *-----------------------------------------------------------------------------*/
         refresh();
 	return 0;
 }

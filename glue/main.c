@@ -20,7 +20,6 @@
 
 int main()
 {
-	/* get_date_time(); */
 	db_init();
 	ui_init();
 

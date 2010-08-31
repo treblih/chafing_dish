@@ -15,7 +15,6 @@
  * =====================================================================================
  */
 
-#include	"widget.h"
 #include	"event.h"
 #include	"glue.h"
 #include	"stack.h"
@@ -41,9 +40,9 @@ static void *decode(FORM *);
 static void *field_input(FORM *);
 
 static void *input_core(FORM *, FUNCP);
-static void *discount(FORM *, double);
-static void *total(FORM *, double);
-static void *charge(FORM *, double);
+static void *discount(FORM *, float);
+static void *total(FORM *, float);
+static void *charge(FORM *, float);
 static void *sure(FORM *);
 static void *field_update(FIELD *, float);
 static void *menu_update();
@@ -271,7 +270,7 @@ static void *input_core(FORM *form, FUNCP callback)
 		return NULL;
 	}
 	const FIELD *field = current_field(form);
-	double data = atof(field_buffer(field, 0));
+	float data = (float)atof(field_buffer(field, 0));
 	if (data) {
 		if (!callback(form, data)) {
 			form_driver(form, REQ_DOWN_FIELD);
@@ -281,20 +280,20 @@ static void *input_core(FORM *form, FUNCP callback)
 	return NULL;
 }
 
-static void *discount(FORM *form, double data)
+static void *discount(FORM *form, float data)
 {
 	data /= 10;
 	field_update(fields[TOTAL], data * price_total);
 	return NULL;
 }
 
-static void *total(FORM *form, double data)
+static void *total(FORM *form, float data)
 {
 	price_total = data;
 	return NULL;
 }
 
-static void *charge(FORM *form, double data)
+static void *charge(FORM *form, float data)
 {
 	if (data < price_total)	 {
 		print_notice("他给的钱不够。。。");
@@ -349,6 +348,47 @@ static void *menu_update()
 	post_menu(menu);
 	wrefresh(w_mid);
 	return NULL;
+}
+
+
+/* just for clear all */
+static void *restore_table_menu()
+{
+	char sql[100];
+	int qty;
+	struct elem *elem;
+	while (elem = stack_pop(stk)) {
+ 		qty = elem->qty;
+		sprintf(sql, 
+			"update menu set stocks = stocks %c %d, acc = acc %c %d \
+			 where id = %d",
+			plus, qty, mins, qty, elem->id);
+		sqlite3_exec(get_db_main(), sql, 0, 0, 0);
+	}
+	return NULL;
+}
+
+static void *update_table_bill()
+{
+	if (in_out) {
+		price_total = 0 - price_total;
+		cost_total = 0 - cost_total;
+	}
+	char sql[100];
+	/* char *err = calloc(1, 100); */
+	sprintf(sql, 
+		"insert into bill (date, time, sales, cost, profil) \
+		 values ('%s', '%s', %.1f, %.1f, %.1f)",
+		get_date_time(GET_DATE), get_date_time(GET_TIME),
+		price_total, cost_total, price_total - cost_total);
+	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
+	/* fprintf(stderr, "%s\r\n", err); */
+	return NULL;
+}
+
+float get_price_total()
+{
+	return price_total;
 }
 
 void *sales(MENU *mn)
@@ -449,39 +489,4 @@ void *sales(MENU *mn)
 	free_widget(widget, (void **)fields, FIELD_CNT);
 	wrefresh(w_right);
 	return 0;
-}
-
-/* just for clear all */
-static void *restore_table_menu()
-{
-	char sql[100];
-	int qty;
-	struct elem *elem;
-	while (elem = stack_pop(stk)) {
- 		qty = elem->qty;
-		sprintf(sql, 
-			"update menu set stocks = stocks %c %d, acc = acc %c %d \
-			 where id = %d",
-			plus, qty, mins, qty, elem->id);
-		sqlite3_exec(get_db_main(), sql, 0, 0, 0);
-	}
-	return NULL;
-}
-
-static void *update_table_bill()
-{
-	if (in_out) {
-		price_total = 0 - price_total;
-		cost_total = 0 - cost_total;
-	}
-	char sql[100];
-	/* char *err = calloc(1, 100); */
-	sprintf(sql, 
-		"insert into bill (date, time, sales, cost, profil) \
-		 values ('%s', '%s', %.1f, %.1f, %.1f)",
-		get_date_time(GET_DATE), get_date_time(GET_TIME),
-		price_total, cost_total, price_total - cost_total);
-	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
-	/* fprintf(stderr, "%s\r\n", err); */
-	return NULL;
 }

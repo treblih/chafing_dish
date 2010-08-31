@@ -15,8 +15,6 @@
  * =====================================================================================
  */
 
-#include	<locale.h>
-#include	"widget.h"
 #include	"event.h"
 #include	"glue.h"
 
@@ -74,6 +72,7 @@ void *statbar_init()
 	while (1) {
 		time = get_date_time(GET_TIME);
 		wprintw(w_status, "\r%35s", time);
+		curs_set(0);
 		wrefresh(w_status);
 		sleep(60);
 	}

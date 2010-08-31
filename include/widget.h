@@ -18,6 +18,7 @@
 #ifndef		WIDGET_H
 #define		WIDGET_H
 
+#include	<locale.h>
 #include	<stdlib.h>
 #include	<pthread.h>
 #include	<unistd.h>

@@ -15,7 +15,6 @@
  * =====================================================================================
  */
 
-#include	"widget.h"
 #include	"event.h"
 
 int interact(WIDGET *widget)

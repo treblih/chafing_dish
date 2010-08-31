@@ -18,6 +18,8 @@
 #ifndef		EVENT_H
 #define		EVENT_H
 
+#include	"widget.h"
+
 #define		LEN		10
 #define		Y		25
 #define		X		4
@@ -39,6 +41,7 @@ extern void *get_today_bills(MENU *);
 
 /* sales.c */
 extern void *sales();
+extern float get_price_total();
 
 /* passwd.c */
 extern void *passwd();

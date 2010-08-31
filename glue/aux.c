@@ -15,8 +15,9 @@
  * =====================================================================================
  */
 
-#include	"glue.h"
 #include	<errno.h>
+#include	"event.h"
+#include	"glue.h"
 
 static int sql_item_cnt;
 static pthread_t pt[PTHREAD_NUM];
@@ -154,8 +155,11 @@ void *list2file(char **list)
 {
 	int i = 0;
 	char path[50];
+	char date[11];
 	char time[6];
+	strncpy(date, get_date_time(GET_DATE), 5);
 	strncpy(time, get_date_time(GET_TIME), 5);
+	date[11] = '\0';
 	time[5] = '\0';
 	time[2] = '_';		/* 15:54 -> 15_54 */
 
@@ -163,9 +167,11 @@ void *list2file(char **list)
 	FILE *fp = fopen(path, "a");
 	fprintf(stderr, "%d\r\n", errno);
 	perror("fopen");
+	fprintf(fp, "感谢赏脸吴哥火锅  %s  %s\n\n", date, time);
 	while (*list[i]) {
 		fprintf(fp, "%s\n", list[i++]);
 	}
+	fprintf(fp, "\n合计：%.1f", get_price_total());
 	fclose(fp);
 	return NULL;
 }

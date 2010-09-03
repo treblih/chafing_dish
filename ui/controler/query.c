@@ -48,7 +48,7 @@ void *query(int x, int format_x, char *sql, FUNCP callback, int col, ...)
 	mt.win = get_win(W_MID);
 	mt.format_y = LINES - 3;
 
-	menu_create(&mt);
+	menu_interact(&mt);
 	free(res);
 	return NULL;
 }

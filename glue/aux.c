@@ -157,22 +157,29 @@ void *list2file(char **list)
 	char path[50];
 	char date[11];
 	char time[6];
-	strncpy(date, get_date_time(GET_DATE), 5);
+	strncpy(date, get_date_time(GET_DATE), 10);
 	strncpy(time, get_date_time(GET_TIME), 5);
-	date[11] = '\0';
+	date[10] = '\0';
 	time[5] = '\0';
 	time[2] = '_';		/* 15:54 -> 15_54 */
 
+	/* open the file */
 	sprintf(path, "ch%s.txt", time);
 	FILE *fp = fopen(path, "a");
 	fprintf(stderr, "%d\r\n", errno);
 	perror("fopen");
-	fprintf(fp, "感谢赏脸吴哥火锅  %s  %s\n\n", date, time);
+
+	/* output */
+	time[2] = ':';		/* 15_54 -> 15:54 */
+	fprintf(fp, "感谢赏脸吴哥火锅\n%s  %s\n\n", date, time);
 	while (*list[i]) {
 		fprintf(fp, "%s\n", list[i++]);
 	}
-	fprintf(fp, "\n合计：%.1f", get_price_total());
-	fclose(fp);
+	fprintf(fp, "\n折扣：%5.1f\n", get_discount());
+	fprintf(fp,   "合计：%5.1f\n", get_price_total());
+	fprintf(fp,   "实收：%5.1f\n", get_receive_total());
+	fprintf(fp,   "找零：%5.1f\n", get_change());
+	fclose (fp);
 	return NULL;
 }
 

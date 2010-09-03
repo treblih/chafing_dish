@@ -51,5 +51,5 @@ void *transact()
 {
 	mt.choice_n = ARRAY_SIZE(choice);
 	mt.win = get_win(W_RIGHT);
-	return menu_create(&mt);
+	return menu_interact(&mt);
 }

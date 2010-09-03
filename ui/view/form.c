@@ -3,7 +3,8 @@
  *
  *       Filename:  form.c
  *
- *    Description:  
+ *    Description:  form has more attributes than menu, 
+ *    		    so don't need a form_interact() than menu dose
  *
  *        Created:  22.08.10
  *       Revision:  

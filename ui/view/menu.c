@@ -20,13 +20,17 @@
 static void *direct(MENU *, int, int);
 static void *enter(MENU *);
 
-static FUNCP kb_response[] = {
+static FUNCP kb_response_menu[] = {
 	direct,
 	enter,
 	NULL,
 	NULL
 };
 
+FUNCP *get_kb_response_menu()
+{
+	return kb_response_menu;
+}
 /*-----------------------------------------------------------------------------
  *  abstract item initialization not menu because of it's variability
  *-----------------------------------------------------------------------------*/
@@ -84,7 +88,7 @@ static void *enter(MENU *menu)
 	return NULL;
 }
 
-void *menu_create(menu_t *mt)
+void *menu_interact(menu_t *mt)
 {
 	int choice_n = mt->choice_n;
 	WINDOW *win = mt->win;
@@ -103,7 +107,7 @@ void *menu_create(menu_t *mt)
 				     (FUNCP)unpost_menu, 
 				     (FUNCP)free_menu,
 				     (FUNCP)free_item,
-			             kb_response, mt->desc_notice);
+			             kb_response_menu, mt->desc_notice);
 
 	interact(widget);
 

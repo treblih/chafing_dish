@@ -32,6 +32,12 @@ int ui_init()
         return 0;
 }
 
+int ui_close()
+{
+	win_dstr();
+	endwin();
+}
+
 int ncurses_init()
 {
         setlocale(LC_ALL, "zh_CN.UTF-8");
@@ -72,7 +78,6 @@ void *statbar_init()
 	while (1) {
 		time = get_date_time(GET_TIME);
 		wprintw(w_status, "\r%35s", time);
-		curs_set(0);
 		wrefresh(w_status);
 		sleep(60);
 	}

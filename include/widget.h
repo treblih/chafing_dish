@@ -111,11 +111,10 @@ enum DIRECTION {
 
 #define 	ARRAY_SIZE(a)	(sizeof (a) / sizeof (a[0]))
 
-#define		ui_close()	endwin()
 
 /* menu.c */
 extern ITEM **item_initialize(char **, char **, FUNCP *, int, int);
-extern void *menu_create(menu_t *);
+extern void *menu_interact(menu_t *);
 
 /* form.c */
 extern void *form_direct(FORM *, int, int);
@@ -126,6 +125,7 @@ extern int form_validation(FORM *);
 
 /* stdscr.c */
 extern int ui_init(void);
+extern int ui_close(void);
 extern int ncurses_init(void);
 extern void *statbar_init();
 
@@ -136,6 +136,7 @@ extern int free_widget(WIDGET *, void **, int);
 
 /* win.c */
 extern int win_init(void);
+extern int win_dstr(void);
 extern WINDOW *get_win(int);
 extern int print_notice(const char *, ...);
 

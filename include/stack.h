@@ -28,8 +28,8 @@ struct elem {
 	int id;	/* 4 + '\0' */
 	int stocks;
 	int qty;
-	float price;
-	float cost;
+	double price;
+	double cost;
 	char name[50];
 };
 
@@ -47,5 +47,7 @@ extern struct elem *stack_pop(stack_t *);
 extern void stack_free(stack_t *);
 void stack_reset(stack_t *);
 extern int stack_cnt(stack_t *);
+extern struct elem *stack_get_one(stack_t *, int);
+extern void *stack_delete_one(stack_t *, int);
 
 #endif

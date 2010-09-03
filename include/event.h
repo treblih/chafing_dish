@@ -21,7 +21,7 @@
 #include	"widget.h"
 
 #define		LEN		10
-#define		Y		25
+#define		Y		23
 #define		X		4
 
 /* event.c */
@@ -31,7 +31,10 @@ extern void *nothing();
 /* main_menu.c */
 extern void *practice(void);
 extern void *bug_report(void);
+
+/* menu.c */
 extern void *main_menu(void);
+extern FUNCP *get_kb_response_menu();
 
 /* transact.c */
 extern void *transact();
@@ -41,7 +44,10 @@ extern void *get_today_bills(MENU *);
 
 /* sales.c */
 extern void *sales();
-extern float get_price_total();
+extern double get_price_total();
+extern double get_discount();
+extern double get_receive_total();
+extern double get_change();
 
 /* passwd.c */
 extern void *passwd();

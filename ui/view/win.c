@@ -41,6 +41,14 @@ int win_init()
 	return 0;
 }
 
+int win_dstr()
+{
+	for (int i = 0; i < 5; ++i)  {
+		delwin(w_arr[i]);
+	}
+	return 0;
+}
+
 WINDOW *get_win(int i)
 {
 	return w_arr[i];

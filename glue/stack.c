@@ -79,10 +79,38 @@ struct elem *stack_pop(stack_t *stk)
 	if (!stk->cnt) {
 		return NULL;
 	}
-	stk->cnt--;                                            /* stack.cnt */
+	--stk->cnt;                                            /* stack.cnt */
 	return stk->ptr++;
 }
 
+struct elem *stack_get_one(stack_t *stk, int idx)
+{
+	/*-----------------------------------------------------------------------------
+	 *  idx	0 ~ n-1
+	 *  cnt 1 ~ n
+	 *-----------------------------------------------------------------------------*/
+	if (idx > (stk->cnt - 1)) {
+		return NULL;
+	}
+	/* tail points to the end, not the last one */
+	return stk->tail - idx - 1;
+}
+
+void *stack_delete_one(stack_t *stk, int idx)
+{
+	if (idx > (stk->cnt - 1)) {
+		return NULL;
+	}
+	/* tail points to the end, not the last one */
+	struct elem *tmp = stk->tail - idx - 1;
+	while (tmp != stk->ptr) {
+		*tmp = *(tmp - 1);
+		tmp -= 1;
+	}
+	--stk->cnt;
+	++stk->ptr;
+	return NULL;
+}
 
 /* 
  * ===  FUNCTION  ======================================================================

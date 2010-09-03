@@ -19,11 +19,12 @@
 #include	"glue.h"
 #include	"stack.h"
 
-#define		FIELD_CNT	7
+#define		FIELD_CNT	8
 #define		SURE_INVOCATION 1014
 
 enum FIELDS {
 	CLR_ALL,
+	CLR_ANY,
 	CANCEL,
 	DECODE,
 	DISCOUNT,
@@ -35,16 +36,18 @@ enum FIELDS {
 /* func declaration */
 static void *var_reset();
 static void *clr_all();
+static void *clr_any(FORM *);
 static void *cancel(FORM *);
 static void *decode(FORM *);
 static void *field_input(FORM *);
+static void *delete(MENU *);
 
 static void *input_core(FORM *, FUNCP);
-static void *discount(FORM *, float);
-static void *total(FORM *, float);
-static void *charge(FORM *, float);
+static void *discount(FORM *, double);
+static void *total(FORM *, double);
+static void *charge(FORM *, double);
 static void *sure(FORM *);
-static void *field_update(FIELD *, float);
+static void *field_update(FIELD *, double);
 static void *menu_update();
 static void *restore_table_menu();
 static void *update_table_bill();
@@ -53,6 +56,7 @@ static void *update_table_bill();
 /* local variables */
 static FUNCP event[] = {
 	clr_all,
+	clr_any,
 	cancel,
 	decode,
 	field_input,
@@ -60,7 +64,7 @@ static FUNCP event[] = {
 	field_input,
 	sure,
 
-	/* 7 8 9 */
+	/* 8 9 10 */
 	discount,
 	total,
 	charge
@@ -89,12 +93,15 @@ static MENU *menu;
 static ITEM **items;
 static char **res;
 static stack_t *stk;
+static WIDGET *widget_bill;
 
 static int stocks_benchmark;
 static int idx;
-static float price_total;
-static float cost_total;
-static float profil_total;
+static double price_total;
+static double cost_total;
+static double disc;
+static double receive_total;
+static double change;
 static struct elem info;
 
 
@@ -103,9 +110,9 @@ static void *var_reset()
 {
 	/* no stocks_benchmark */
 	idx = 0;
-	price_total = 0;
-	cost_total = 0;
-	profil_total = 0;
+	price_total = 0.0;
+	cost_total = 0.0;
+	disc = 0.0;
 	info.id = 0;
 	*info.name = '\0';
 	info.price = 0.0;
@@ -138,25 +145,49 @@ static void *clr_all(FORM *form, int is_sure)
 	set_field_buffer(fields[DISCOUNT], 0, "");
 	set_field_buffer(fields[TOTAL], 0, "");
 	set_field_buffer(fields[CHARGE], 0, "");
+
 	/* display reset */
 	menu_update();
-	pos_form_cursor(form);
+
+	/* if invocated clr_any(), widget_bill would be set */
+	if (widget_bill) {
+		/* free, including menu/items */
+		free_widget(widget_bill, (void **)items, idx);
+		widget_bill = NULL;
+	}
+	set_current_field(form, fields[DECODE]);
+	/* pos_form_cursor(form); */
 	var_reset();
+	return NULL;
+}
+
+static void *clr_any(FORM *form)
+{
+	widget_bill = widget_init(get_win(W_MID), menu,
+			     (FUNCP)unpost_menu, 
+			     (FUNCP)free_menu,
+			     (FUNCP)free_item,
+			     get_kb_response_menu(), DESC_NO);
+	curs_set(0);
+	interact(widget_bill);
+	curs_set(1);
+	pos_form_cursor(form);
+	/* free in clr_all() */
 	return NULL;
 }
 
 static void *cancel(FORM *form)
 {
-	char sql[100];
-	int qty;
 	if (!idx) {
 		print_notice("已经退完了，不给再退了");
 		pos_form_cursor(form);
 		return NULL;
 	}
-
+	char sql[100];
+	int qty;
+	struct elem *tmp;
 	*res[--idx] = '\0';
-	struct elem *tmp = stack_pop(stk);
+	tmp = stack_pop(stk);
 	qty = tmp->qty;
 	sprintf(sql, 
 		"update menu set stocks = stocks %c %d, acc = acc %c %d \
@@ -243,8 +274,8 @@ static void *decode(FORM *form)
 	/* store */
 	/* print_notice("%p", &info); */
 	stack_push(stk, &info);
-	sprintf(res[idx], "%-10s %d份  单价%4.1f  累计%5.1f", 
-		info.name, info.qty, info.price, price_total);
+	sprintf(res[idx], "%-10s %d份  单价%4.1f  总价%5.1f", 
+		info.name, info.qty, info.price, info.qty * info.price);
 	field_update(fields[TOTAL], price_total);
 	menu_update();
 
@@ -260,7 +291,7 @@ static void *decode(FORM *form)
 static void *field_input(FORM *form)
 {
 	int i = field_index(current_field(form));
-	input_core(form, event[1 + DISCOUNT + i]);
+	input_core(form, event[DISCOUNT + i]);
 	return NULL;
 }
 
@@ -270,7 +301,7 @@ static void *input_core(FORM *form, FUNCP callback)
 		return NULL;
 	}
 	const FIELD *field = current_field(form);
-	float data = (float)atof(field_buffer(field, 0));
+	double data = atof(field_buffer(field, 0));
 	if (data) {
 		if (!callback(form, data)) {
 			form_driver(form, REQ_DOWN_FIELD);
@@ -280,27 +311,30 @@ static void *input_core(FORM *form, FUNCP callback)
 	return NULL;
 }
 
-static void *discount(FORM *form, float data)
+static void *discount(FORM *form, double data)
 {
-	data /= 10;
+	disc = data;
+	data /= 10.0;
 	field_update(fields[TOTAL], data * price_total);
 	return NULL;
 }
 
-static void *total(FORM *form, float data)
+static void *total(FORM *form, double data)
 {
 	price_total = data;
 	return NULL;
 }
 
-static void *charge(FORM *form, float data)
+static void *charge(FORM *form, double data)
 {
 	if (data < price_total)	 {
 		print_notice("他给的钱不够。。。");
 		form_driver(form, REQ_CLR_FIELD);
 		return (void *)1;
 	}
-	print_notice("找零 %.1f", data - price_total);
+	receive_total = data;
+	change        = data - price_total;
+	print_notice("找零 %.1f", change);
 	return NULL;
 }
 
@@ -321,7 +355,7 @@ static void *sure(FORM *form)
 	return NULL;
 }
 
-static void *field_update(FIELD *field, float x)
+static void *field_update(FIELD *field, double x)
 {
 	/* update fields-total */
 	char tmp[6] = {0};	/* xxx.x + '\0' */
@@ -330,6 +364,12 @@ static void *field_update(FIELD *field, float x)
 	return NULL;
 }
 
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  menu_update
+ *  Description:  1 time 1 item
+ * =====================================================================================
+ */
 static void *menu_update()
 {
 	/* update menu in the mid window */
@@ -338,6 +378,7 @@ static void *menu_update()
 		free_menu(menu);
 	}
 	items[idx] = new_item(res[idx], NULL);
+	set_item_userptr(items[idx], delete);
         menu = new_menu(items);
         menu_opts_off(menu, O_ROWMAJOR | O_SHOWDESC);
 
@@ -350,6 +391,45 @@ static void *menu_update()
 	return NULL;
 }
 
+static void *delete(MENU *menu)
+{
+	if (!idx) {
+		print_notice("已经退完了，不给再退了");
+		return NULL;
+	}
+	int i = item_index(current_item(menu));
+	int qty;
+	char sql[100];
+	struct elem *tmp;
+	if ((tmp = stack_get_one(stk, i)) == NULL) {
+		return NULL;
+	}
+	qty = tmp->qty;
+	sprintf(sql, 
+		"update menu set stocks = stocks %c %d, acc = acc %c %d \
+		 where id = %d",
+		plus, qty, mins, qty, tmp->id);
+	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
+
+	price_total -= (tmp->qty * tmp->price);
+	cost_total  -= (tmp->qty * tmp->cost);
+	/* fields reset */
+	field_update(fields[TOTAL], price_total);
+	wrefresh(get_win(W_RIGHT));
+	set_field_buffer(fields[DISCOUNT], 0, "");
+	set_field_buffer(fields[CHARGE], 0, "");
+	stack_delete_one(stk, i);
+
+	/* display reset */
+	while (*res[i + 1]) {
+		strcpy(res[i], res[i + 1]);	
+		++i;
+	}
+	*res[i] = '\0';
+	--idx;
+	menu_update();
+	return NULL;
+}
 
 /* just for clear all */
 static void *restore_table_menu()
@@ -386,9 +466,24 @@ static void *update_table_bill()
 	return NULL;
 }
 
-float get_price_total()
+double get_price_total()
 {
 	return price_total;
+}
+
+double get_discount()
+{
+	return disc;
+}
+
+double get_receive_total()
+{
+	return receive_total;
+}
+
+double get_change()
+{
+	return change;
 }
 
 void *sales(MENU *mn)
@@ -412,13 +507,13 @@ void *sales(MENU *mn)
 		set_field_userptr(fields[i], event[i]);
 	}
 	/* set attr */
-	for (i = 0; i < 2; ++i) {
+	for (i = 0; i < 3; ++i) {
 		set_field_back(fields[i], COLOR_PAIR(1));
 		set_field_just(fields[i], JUSTIFY_LEFT);
 		field_opts_off(fields[i], O_EDIT | O_AUTOSKIP);  	
 		/* field_opts_off(fields[i], O_ACTIVE);  	 */
 	}
-	for (; i < 6; ++i) {
+	for (; i < FIELD_CNT - 1; ++i) {
 		/* 1 - precision */
 		set_field_type(fields[i], TYPE_NUMERIC, 1, 0.0, 999.9);
 		set_field_just(fields[i], JUSTIFY_LEFT);
@@ -438,6 +533,7 @@ void *sales(MENU *mn)
         post_form(form);
         /* wrefresh(w_right); */
 	set_field_buffer(fields[CLR_ALL], 0, "取消全部");
+	set_field_buffer(fields[CLR_ANY], 0, "取消任意");
 	set_field_buffer(fields[CANCEL],  0, "取消上一个");
 	set_field_buffer(fields[SURE],    0, "确定");
 	set_current_field(form, fields[DECODE]);

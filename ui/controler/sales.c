@@ -420,6 +420,7 @@ static void *delete(MENU *menu)
 	set_field_buffer(fields[CHARGE], 0, "");
 	stack_delete_one(stk, i);
 
+	int current = i;
 	/* display reset */
 	while (*res[i + 1]) {
 		strcpy(res[i], res[i + 1]);	
@@ -428,6 +429,13 @@ static void *delete(MENU *menu)
 	*res[i] = '\0';
 	--idx;
 	menu_update();
+
+	/*-----------------------------------------------------------------------------
+	 *  menu_update() will generate a new menu, so current item will always be 
+	 *  the 1st,
+	 *  i don't want this, make it as if it was successive
+	 *-----------------------------------------------------------------------------*/
+	set_current_item(menu, items[current]);
 	return NULL;
 }
 

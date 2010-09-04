@@ -386,6 +386,7 @@ static void *menu_update()
         set_menu_win(menu, w_mid);
         set_menu_sub(menu, derwin(w_mid, 0, 0, 1, 25));
         set_menu_format(menu, LINES - 3, 1);
+	set_menu_mark(menu, "");
 	post_menu(menu);
 	wrefresh(w_mid);
 	return NULL;

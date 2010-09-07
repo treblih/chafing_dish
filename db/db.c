@@ -15,7 +15,6 @@
  * =====================================================================================
  */
 
-#include	"db.h"
 #include	"glue.h"
 
 static int init(const char *, sqlite3 **);
@@ -26,7 +25,7 @@ static sqlite3 *handle_daily;
 sqlite3 *get_db_main()
 {
 	if (!handle_main) {
-		init("chafing.db", &handle_main);
+		init(CHAFING_DB, &handle_main);
 	}
 	return handle_main;
 }

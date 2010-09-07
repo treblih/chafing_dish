@@ -123,6 +123,12 @@ char **bulk_expand(char **res, int cnt_orig, int size, int cnt)
 	return res_large;
 }
 
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  spc2zr
+ *  Description:  space 20 '\0'
+ * =====================================================================================
+ */
 void *spc2zr(char *str)
 {
 	int ch;
@@ -137,6 +143,12 @@ void *spc2zr(char *str)
 	return NULL;
 }
 
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  strdelim
+ *  Description:  delimits str by ch and save the result to saveptr
+ * =====================================================================================
+ */
 char *strdelim(char *str, int ch, char **saveptr)
 {
 	int i = 0;

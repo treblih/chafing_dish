@@ -17,13 +17,18 @@
 
 #include	"event.h"
 #include	"glue.h"
+#include	<unistd.h>
+#include	<sys/types.h>
+
+static void *slash2underline(char *str);
 
 static char *choice[] = {
         "今日详细账单",
         "最火爆菜种",
 	"最少库存",
 	"进入数据库",
-	"刷新网络名/密码"
+	"刷新网络名/密码",
+	"备份数据库",
 };
 
 static char *choice_desc[] = {
@@ -31,7 +36,8 @@ static char *choice_desc[] = {
         "前20",
 	"需要尽快补货",
 	"启动可视化数据库管理软件，可直接管理数据",
-	"当更改过数据库中无线网络和密码设置后，更新底部状态栏显示"
+	"当更改过数据库中无线网络和密码设置后，更新底部状态栏显示",
+	"会自动把数据文件发送至预定邮箱",
 };
 
 static void *popular()
@@ -60,12 +66,66 @@ static void *flush()
 	return statbar_init();
 }
 
+static void *db_bak()
+{
+	int fd[2];
+	pid_t gmimeuuencode;
+	pid_t mail;
+	char date[14] = { 0 };		/* 2010/08/31.db'\0' */
+	char sql[100];
+	sprintf(date, "%s", get_date_time(GET_DATE));
+	sprintf(sql, "select value from config where key = 'email'");
+	db_select_1_row(get_db_main(), sql, 1, SELECT_TEXT, sql);
+	if (!*sql) {
+		print_notice("数据库中未找到email地址，发送失败，抱歉！");
+		return NULL;
+	}
+
+	if (pipe(fd) == -1) {
+		perror("pipe error");
+		return NULL;
+	}
+	/* child 1 */
+	if ((gmimeuuencode = fork()) == 0) {
+		close(fd[0]);
+		dup2(fd[1], 1);
+		close(fd[1]);
+		execlp("gmimeuuencode", "gmimeuuencode", CHAFING_DB, 
+			slash2underline(date), NULL);
+		perror("gmimeuuencode error");       /* still around? exec failed */
+		return NULL;
+	}
+	/* child 2 */
+	if ((mail = fork()) == 0) {
+		close(fd[1]);
+		dup2(fd[0], 0);
+		close(fd[0]);
+		/* sql holds the email addr */
+		execlp("mail", "mail", "-s", "\"火锅店数据备份\"", sql, NULL);
+		perror("mail error");
+		return NULL;
+	}
+	return  NULL;
+}
+
+static void *slash2underline(char *str)
+{
+	while (*str) {
+		if (*str == '/') {
+			*str == '_';
+		}
+		++str;
+	}
+	return NULL;
+}
+
 static FUNCP userptr[] = {
 	get_today_bills,
 	popular,
 	lack,
 	db_manager,
-	flush
+	flush,
+	db_bak
 };
 
 static menu_t mt = {

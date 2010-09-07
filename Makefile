@@ -28,7 +28,7 @@ vpath	%.c	db
 
 .PHONY	:all install clean
 
-all	:$(AOUT)
+all	:$(AOUT) install
 $(AOUT)	:$(OBJS)
 	$(LD) $(LDFLAGS) $(OBJS) -o $@
 $(OBJS) :%.o	:%.c
@@ -38,8 +38,8 @@ $(OBJS) :%.o	:%.c
 install :
 	echo -e "#!/bin/bash\nexec chafing 2> /dev/null" > $(EXE)
 	chmod a+x $(EXE)
-	-cp $(AOUT) $(DES)
-	-cp $(EXE) $(DES)
+	sudo cp $(AOUT) $(DES)
+	sudo cp $(EXE) $(DES)
 
 clean	:
 	-rm -rf $(OBJS) $(AOUT) $(EXE)

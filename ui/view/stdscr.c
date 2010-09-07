@@ -72,9 +72,9 @@ void *statbar_init()
 			1, SELECT_TEXT, ssid_passwd);
 	WINDOW *w_status = get_win(W_STATUS);
 	wprintw(w_status, "%50s", date);
-	wprintw(w_status, "     %s", get_date_time(GET_WDAY));
-	wprintw(w_status, "     无线网络账户：%s", ssid);
-	wprintw(w_status, "     密码：%s", ssid_passwd);
+	/* wprintw(w_status, "     %s", get_date_time(GET_WDAY)); */
+	wprintw(w_status, "     SSID：%s", ssid);
+	wprintw(w_status, "     PASSWORD：%s", ssid_passwd);
 	while (1) {
 		time = get_date_time(GET_TIME);
 		wprintw(w_status, "\r%35s", time);

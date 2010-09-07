@@ -19,8 +19,9 @@
 #include	"glue.h"
 #include	<unistd.h>
 #include	<sys/types.h>
+#include	<sys/wait.h>
 
-static void *slash2underline(char *str);
+static void *date2dbname(char *str);
 
 static char *choice[] = {
         "今日详细账单",
@@ -80,6 +81,8 @@ static void *db_bak()
 		print_notice("数据库中未找到email地址，发送失败，抱歉！");
 		return NULL;
 	}
+	date2dbname(date);
+	print_notice(date);
 
 	if (pipe(fd) == -1) {
 		perror("pipe error");
@@ -91,7 +94,7 @@ static void *db_bak()
 		dup2(fd[1], 1);
 		close(fd[1]);
 		execlp("gmimeuuencode", "gmimeuuencode", CHAFING_DB, 
-			slash2underline(date), NULL);
+			date2dbname(date), NULL);
 		perror("gmimeuuencode error");       /* still around? exec failed */
 		return NULL;
 	}
@@ -101,21 +104,25 @@ static void *db_bak()
 		dup2(fd[0], 0);
 		close(fd[0]);
 		/* sql holds the email addr */
-		execlp("mail", "mail", "-s", "\"火锅店数据备份\"", sql, NULL);
+		execlp("mail", "mail", "-s", "火锅店数据备份", sql, NULL);
 		perror("mail error");
 		return NULL;
 	}
 	return  NULL;
 }
 
-static void *slash2underline(char *str)
+static void *date2dbname(char *str)
 {
 	while (*str) {
 		if (*str == '/') {
-			*str == '_';
+			*str = '_';
 		}
 		++str;
 	}
+	*str++ = '.';
+	*str++ = 'd';
+	*str++ = 'b';
+	*str   = '\0';
 	return NULL;
 }
 

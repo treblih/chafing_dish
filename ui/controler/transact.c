@@ -27,7 +27,7 @@ static char *choice[] = {
 static char *choice_desc[] = {
         "哇卡卡卡卡卡卡要收钱了",
         "查询消费明细/退选部分菜种",
-	"消费者有时可能需要小退几个菜"
+	"厨房意外发现没菜了，但消费者已经消费了。。。"
 };
 
 static FUNCP userptr[] = {

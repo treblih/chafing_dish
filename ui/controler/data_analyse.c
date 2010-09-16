@@ -28,7 +28,7 @@ static char *choice[] = {
         "最火爆菜种",
 	"最少库存",
 	"进入数据库",
-	"刷新网络名/密码",
+	/* "刷新网络名/密码", */
 	"备份数据库",
 };
 
@@ -37,20 +37,20 @@ static char *choice_desc[] = {
         "前20",
 	"需要尽快补货",
 	"启动可视化数据库管理软件，可直接管理数据",
-	"当更改过数据库中无线网络和密码设置后，更新底部状态栏显示",
+	/* "当更改过数据库中无线网络和密码设置后，更新底部状态栏显示", */
 	"会自动把数据文件发送至预定邮箱",
 };
 
 static void *popular()
 {
-	return query(20, 1, 
+	return query_menu(20, 1, 
 		  "select id, name, acc from menu order by acc desc limit 20", 
 		   NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
 }
 
 static void *lack()
 {
-	return query(20, 1, 
+	return query_menu(20, 1, 
 	          "select id, name, stocks from menu order by stocks limit 20",
 	           NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
 }
@@ -58,14 +58,16 @@ static void *lack()
 static void *db_manager()
 {
 	/* redirect stdout/stderr to /dev/null */
-	system("sqliteman ~/chafing/chafing.db >& /dev/null");
+	system("sqliteman chafing.db >& /dev/null");
 	return NULL; 
 }
 
+#if 0
 static void *flush()
 {
 	return statbar_init();
 }
+#endif
 
 static void *db_bak()
 {
@@ -131,7 +133,7 @@ static FUNCP userptr[] = {
 	popular,
 	lack,
 	db_manager,
-	flush,
+	/* flush, */
 	db_bak
 };
 

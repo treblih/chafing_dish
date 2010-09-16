@@ -315,7 +315,9 @@ static void *discount(FORM *form, double data)
 {
 	disc = data;
 	data /= 10.0;
-	field_update(fields[TOTAL], data * price_total);
+	double after_dis = data * price_total;
+	field_update(fields[TOTAL], after_dis);
+	print_notice("折前%.1f，折后%.1f，实惠看得见！！", price_total, after_dis);
 	return NULL;
 }
 
@@ -334,7 +336,7 @@ static void *charge(FORM *form, double data)
 	}
 	receive_total = data;
 	change        = data - price_total;
-	print_notice("找零 %.1f", change);
+	print_notice("找零%.1f", change);
 	return NULL;
 }
 

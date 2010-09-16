@@ -1,5 +1,5 @@
 CC	:=	gcc
-CFLAGS	:=	-std=gnu99 -O2 -g -c -I include/
+CFLAGS	:=	-std=gnu99 -g -c -I include/
 LD	:=	ld
 LIBS	:=	-lpthread -lncursesw -lmenuw -lformw -lsqlite3 
 LOADER	:=	-dynamic-linker /lib/ld-linux.so.2
@@ -13,8 +13,8 @@ LDFLAGS :=	$(LOADER) $(CRT) $(LIBS)
 
 # all objs
 OBJS	:= 	menu.o form.o widget.o win.o stdscr.o \
-		event.o main_menu.o transact.o sales.o data_analyse.o get_today_bills.o passwd.o query.o \
-		main.o aux.o stack.o \
+		event.o main_menu.o transact.o sales.o data_analyse.o get_today_bills.o \
+		passwd.o query_menu.o main.o aux.o stack.o \
 		db.o
 AOUT	:=	chafing
 EXE	:=	wmj
@@ -36,7 +36,7 @@ $(OBJS) :%.o	:%.c
 
 # '-' makes it ignore the retval whether failure or not
 install :
-	echo -e "#!/bin/bash\nexec chafing 2> /dev/null" > $(EXE)
+	echo -e "#!/bin/bash\nexec chafing 2> err.log" > $(EXE)
 	chmod a+x $(EXE)
 	sudo cp $(AOUT) $(DES)
 	sudo cp $(EXE) $(DES)

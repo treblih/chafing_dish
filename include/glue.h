@@ -18,8 +18,16 @@
 #ifndef         GLUE_H
 #define         GLUE_H
 
+#include 	<setjmp.h>
 #include 	<time.h>
 #include 	"db.h"
+
+struct daily_total {
+	int cnt;
+	double sales;
+	double cost;
+	double profil;
+};
 
 #define		PTR_SIZE	sizeof (char *)
 #define		STR_LEN		64
@@ -37,15 +45,18 @@ extern 	char *get_date_time(int);
 #define		ADMIN		0
 #define		USER		1
 
+extern	jmp_buf *get_jmp_buf();
 extern	void set_sql_item_cnt(int);
 extern	int get_sql_item_cnt();
 extern	char **bulk_space(int, int);
 extern	char **bulk_expand(char **, int, int, int);
 extern	void *spc2zr(char *);
-extern  char *strdelim(char *, int, char **);
+extern  void *strdelim(char *, int, char **);
 extern	void *list2file(char **);
 
-#define		PTHREAD_NUM	1
+#define		PTHREAD_NUM	2
 extern	pthread_t *get_pthread_t(int);
+
+extern struct daily_total *conclusion(char **);
 
 #endif

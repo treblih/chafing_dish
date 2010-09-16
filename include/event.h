@@ -55,7 +55,7 @@ extern void *passwd();
 /* data_analyse.c */
 extern void *data_analyse();
 
-/* query.c */
-extern void *query(int, int, char *, FUNCP, int, ...);
+/* query_menu.c */
+extern void *query_menu(int, int, char *, FUNCP, int, ...);
 
 #endif

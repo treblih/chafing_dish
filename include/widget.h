@@ -127,7 +127,6 @@ extern int form_validation(FORM *);
 extern int ui_init(void);
 extern int ui_close(void);
 extern int ncurses_init(void);
-extern void *statbar_init();
 
 /* widget.c */
 extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 

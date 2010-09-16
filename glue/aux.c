@@ -23,6 +23,12 @@ static int sql_item_cnt;
 static pthread_t pt[PTHREAD_NUM];
 
 
+jmp_buf *get_jmp_buf()
+{
+	static jmp_buf j;
+	return &j;
+}
+
 /* 
  * ===  FUNCTION  ======================================================================
  *         Name:  get_date_time
@@ -149,18 +155,20 @@ void *spc2zr(char *str)
  *  Description:  delimits str by ch and save the result to saveptr
  * =====================================================================================
  */
-char *strdelim(char *str, int ch, char **saveptr)
+void *strdelim(char *str, int ch, char **saveptr)
 {
 	int i = 0;
+	char *record = str;
 	while (*str != '\0') {
 		if (*str == ch) {
-			*str++ = '\0';
-			saveptr[i++] = str;
+			*str = '\0';
+			saveptr[i++] = record;
+			record = ++str;
 		} else {
 			++str;
 		}
 	}
-	return str;
+	return NULL;
 }
 
 void *list2file(char **list)
@@ -176,14 +184,14 @@ void *list2file(char **list)
 	time[2] = '_';		/* 15:54 -> 15_54 */
 
 	/* open the file */
-	sprintf(path, "ch%s.txt", time);
+	sprintf(path, "/home/hask/share/ch%s.txt", time);
 	FILE *fp = fopen(path, "a");
 	fprintf(stderr, "%d\r\n", errno);
 	perror("fopen");
 
 	/* output */
 	time[2] = ':';		/* 15_54 -> 15:54 */
-	fprintf(fp, "感谢赏脸吴哥火锅\n%s  %s\n\n", date, time);
+	fprintf(fp, "感谢赏脸金锅火锅\n%s  %s\n\n", date, time);
 	while (*list[i]) {
 		fprintf(fp, "%s\n", list[i++]);
 	}
@@ -198,4 +206,31 @@ void *list2file(char **list)
 pthread_t *get_pthread_t(int idx)
 {
 	return &pt[idx];
+}
+
+struct daily_total *conclusion(char **bill_list)
+{
+	int i = 0;
+	double price_total = 0;
+	double cost_total = 0;
+	double profil_total = 0;
+	char res[STR_LEN] = { 0 };
+
+	static struct daily_total total;
+
+	/* 3 fields - price/cost/profil */
+	char **seperate = bulk_space(3, ITEM_SIZE);
+	while (*bill_list[i]) {
+		strcpy(res, bill_list[i++]);
+		/* strtok_r(res, " ", seperate); */
+		strdelim(res, ' ', seperate);
+		price_total  += atof(seperate[0]);
+		cost_total   += atof(seperate[1]);
+		profil_total += atof(seperate[2]);
+	}
+	total.cnt = get_sql_item_cnt();
+	total.sales = price_total;
+	total.cost = cost_total;
+	total.profil = profil_total;
+	return &total;
 }

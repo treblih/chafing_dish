@@ -1,9 +1,9 @@
 /*
  * =====================================================================================
  *
- *       Filename:  query.c
+ *       Filename:  query_menu.c
  *
- *    Description:  G
+ *    Description:  
  *
  *        Created:  27.08.10
  *       Revision:  
@@ -27,7 +27,7 @@ static menu_t mt = {
 	.userptr = (FUNCP *)nothing,
 };
 
-void *query(int x, int format_x, char *sql, FUNCP callback, int col, ...)
+void *query_menu(int x, int format_x, char *sql, FUNCP callback, int col, ...)
 {
 	va_list field;
 	va_start(field, col);
@@ -38,7 +38,12 @@ void *query(int x, int format_x, char *sql, FUNCP callback, int col, ...)
 	char **res = db_select(get_db_main(), sql, col, col_type);
 
 	if (callback) {
-		callback(res);
+		struct daily_total *total = (struct daily_total *)callback(res);
+		print_notice("共%d笔生意 总收入%.1f 总成本%.1f 总盈利%.1f", 
+			     total->cnt,
+			     total->sales,
+			     total->cost,
+			     total->profil);
 	}
 
 	mt.x = x;

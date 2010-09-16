@@ -15,14 +15,15 @@
  * =====================================================================================
  */
 
-#include	"widget.h"
-#include	"glue.h"
+#include "widget.h"
+#include "glue.h"
 
 int main()
 {
 	db_init();
-	ui_init();
-
+	if (!setjmp(*get_jmp_buf())) {
+		ui_init();
+	}
 	ui_close();
 	close_db_main();
 	return EXIT_SUCCESS;

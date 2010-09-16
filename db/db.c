@@ -20,7 +20,7 @@
 static int init(const char *, sqlite3 **);
 
 static sqlite3 *handle_main;
-static sqlite3 *handle_daily;
+/* static sqlite3 *handle_daily; */
 
 sqlite3 *get_db_main()
 {
@@ -35,11 +35,12 @@ void close_db_main()
 	sqlite3_close(handle_main);
 }
 
-static int init(const char *filename, sqlite3 **addr)
+static int init(const char *filename, sqlite3 **handler)
 {
-        if (sqlite3_open(filename, addr)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(*addr));
-                return EXIT_FAILURE;
+	/* if there's no db, create new automatically */
+        if (sqlite3_open(filename, handler)) {
+                fprintf(stderr, "%s\n", sqlite3_errmsg(*handler));
+		return EXIT_FAILURE;
         }
         return EXIT_SUCCESS;
 }
@@ -70,7 +71,9 @@ char **db_select(sqlite3 *handle, char *sql, int col, int *col_type)
         sqlite3_stmt *stmt;
 
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+                fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
+			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
+		longjmp(*get_jmp_buf(), 1);
         }
 
 	/*-----------------------------------------------------------------------------
@@ -129,7 +132,8 @@ sql2str:
 	set_sql_item_cnt(i);		/* significant */
 
         if (sqlite3_finalize(stmt)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+                fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
+			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
         }
 	free(tmp);
         return res;
@@ -142,8 +146,10 @@ void *db_select_1_row(sqlite3 *handle, char *sql, int col, ...)
 	va_start(field, col);
         sqlite3_stmt *stmt;
 
-        if (sqlite3_prepare_v2(get_db_main(), sql, -1, &stmt, 0)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+        if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
+                fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
+			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
+		longjmp(*get_jmp_buf(), 1);
         }
 	if (sqlite3_step(stmt) == SQLITE_DONE) {
 		goto end;
@@ -172,7 +178,8 @@ void *db_select_1_row(sqlite3 *handle, char *sql, int col, ...)
 
 end:
         if (sqlite3_finalize(stmt)) {
-                fprintf(stderr, "%s\n", sqlite3_errmsg(handle));
+                fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
+			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
         }
 	va_end(field);
         return NULL;

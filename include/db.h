@@ -24,7 +24,7 @@
 #include	<stdarg.h>
 #include	<sqlite3.h>
 
-#define		CHAFING_DB	"~/chafing/chafing.db"
+#define		CHAFING_DB	"chafing.db"
 
 	/* for db_select */
 enum SELECT {

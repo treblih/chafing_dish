@@ -211,6 +211,7 @@ pthread_t *get_pthread_t(int idx)
 struct daily_total *conclusion(char **bill_list)
 {
 	int i = 0;
+	int cnt = 0;
 	double price_total = 0;
 	double cost_total = 0;
 	double profil_total = 0;
@@ -218,19 +219,23 @@ struct daily_total *conclusion(char **bill_list)
 
 	static struct daily_total total;
 
-	/* 3 fields - price/cost/profil */
-	char **seperate = bulk_space(3, ITEM_SIZE);
+	/* 4 fields - price/cost/profil, maybe count */
+	char **separate = bulk_space(4, ITEM_SIZE);
 	while (*bill_list[i]) {
 		strcpy(res, bill_list[i++]);
-		/* strtok_r(res, " ", seperate); */
-		strdelim(res, ' ', seperate);
-		price_total  += atof(seperate[0]);
-		cost_total   += atof(seperate[1]);
-		profil_total += atof(seperate[2]);
+		/* strtok_r(res, " ", separate); */
+		strdelim(res, ' ', separate);
+		price_total  += atof(separate[0]);
+		cost_total   += atof(separate[1]);
+		profil_total += atof(separate[2]);
+		if (*separate[3]) {
+			cnt += atoi(separate[3]);
+		}
 	}
-	total.cnt = get_sql_item_cnt();
+	total.cnt = (cnt ? cnt : get_sql_item_cnt());
 	total.sales = price_total;
 	total.cost = cost_total;
 	total.profil = profil_total;
+	free(separate);
 	return &total;
 }

@@ -58,5 +58,6 @@ extern	void *list2file(char **);
 extern	pthread_t *get_pthread_t(int);
 
 extern struct daily_total *conclusion(char **);
+extern char * strcut(char *, int);
 
 #endif

@@ -34,30 +34,32 @@ enum FIELDS {
 };
 
 /* func declaration */
-static void *var_reset();
 static void *clr_all();
 static void *clr_any(FORM *);
-static void *cancel(FORM *);
+static void *clr_one(FORM *);
 static void *decode(FORM *);
 static void *field_input(FORM *);
-static void *delete(MENU *);
-
-static void *input_core(FORM *, FUNCP);
+static void *sure(FORM *);
 static void *discount(FORM *, double);
 static void *total(FORM *, double);
 static void *charge(FORM *, double);
-static void *sure(FORM *);
+
+static void *clr_core(struct elem *);
+static void *input_core(FORM *, FUNCP);
+static void *var_reset();
+static void *delete(MENU *);
 static void *field_update(FIELD *, double);
 static void *menu_update();
 static void *restore_table_menu();
 static void *update_table_bill();
+static int any_more(FORM *);
 
 
 /* local variables */
 static FUNCP event[] = {
 	clr_all,
 	clr_any,
-	cancel,
+	clr_one,
 	decode,
 	field_input,
 	field_input,
@@ -100,6 +102,7 @@ static int idx;
 static double price_total;
 static double cost_total;
 static double disc;
+static double before_dis;
 static double receive_total;
 static double change;
 static struct elem info;
@@ -113,6 +116,7 @@ static void *var_reset()
 	price_total = 0.0;
 	cost_total = 0.0;
 	disc = 0.0;
+	before_dis = 0.0;
 	info.id = 0;
 	*info.name = '\0';
 	info.price = 0.0;
@@ -124,12 +128,9 @@ static void *var_reset()
 
 static void *clr_all(FORM *form, int is_sure)
 {
-	if (!idx) {
-		print_notice("已经退完了，不给再退了");
-		pos_form_cursor(form);
+	if (any_more(form)) {
 		return NULL;
 	}
-
 	if (is_sure == SURE_INVOCATION) {
 		/* SURE invocation */
 		stack_reset(stk);
@@ -161,6 +162,14 @@ static void *clr_all(FORM *form, int is_sure)
 	return NULL;
 }
 
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  clr_any
+ *  Description:  move focus to mid menu
+ *  		  invocate delete to remove one & reset the data
+ *  		  clr_any once -- delete multy
+ * =====================================================================================
+ */
 static void *clr_any(FORM *form)
 {
 	widget_bill = widget_init(get_win(W_MID), menu,
@@ -176,34 +185,85 @@ static void *clr_any(FORM *form)
 	return NULL;
 }
 
-static void *cancel(FORM *form)
+static void *clr_one(FORM *form)
 {
-	if (!idx) {
-		print_notice("已经退完了，不给再退了");
-		pos_form_cursor(form);
+	if (any_more(form)) {
 		return NULL;
 	}
-	char sql[100];
-	int qty;
-	struct elem *tmp;
 	*res[--idx] = '\0';
-	tmp = stack_pop(stk);
-	qty = tmp->qty;
+	clr_core(stack_pop(stk));
+
+	/* display reset */
+	menu_update();
+	pos_form_cursor(form);	/* back focus to form of w_right */
+	return NULL;
+}
+
+/* 
+ * ===  FUNCTION  ======================================================================
+ *         Name:  delete
+ *  Description:  as a userptr of every items in mid menu
+ *  		  called by clr_any
+ *  		  clr_any once -- delete multy
+ * =====================================================================================
+ */
+static void *delete(MENU *menu)
+{
+	/* inconvenient to use any_more(form), no form because */
+	if (!idx) {
+		return NULL;
+	}
+	int i = item_index(current_item(menu));
+	struct elem *del;
+	del = stack_get_one(stk, i);
+	clr_core(del);
+
+	stack_delete_one(stk, i);
+	int current = i;
+	/* display reset */
+	while (*res[i + 1]) {
+		strcpy(res[i], res[i + 1]);	
+		++i;
+	}
+	*res[i] = '\0';
+	--idx;
+	menu_update();
+
+	/*-----------------------------------------------------------------------------
+	 *  menu_update() will generate a new menu, so current item will always be 
+	 *  the 1st,
+	 *  i don't want this, make it as if it was successive
+	 *-----------------------------------------------------------------------------*/
+	set_current_item(menu, items[current]);
+	return NULL;
+}
+
+static void *clr_core(struct elem *del)
+{
+	int qty = del->qty;
+	char sql[100];
 	sprintf(sql, 
 		"update menu set stocks = stocks %c %d, acc = acc %c %d \
 		 where id = %d",
-		plus, qty, mins, qty, tmp->id);
+		plus, qty, mins, qty, del->id);
 	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 
-	price_total -= (tmp->qty * tmp->price);
-	cost_total  -= (tmp->qty * tmp->cost);
+	/*-----------------------------------------------------------------------------
+	 *  if clr any/one after discount...
+	 *  make it usual as no discount happened
+	 *-----------------------------------------------------------------------------*/
+	disc = 0.0;
+	receive_total = 0.0;
+	change = 0.0;
+	price_total = before_dis;
+
+	price_total -= (del->qty * del->price);
+	cost_total  -= (del->qty * del->cost);
 	/* fields reset */
 	field_update(fields[TOTAL], price_total);
 	set_field_buffer(fields[DISCOUNT], 0, "");
 	set_field_buffer(fields[CHARGE], 0, "");
-	/* display reset */
-	menu_update();
-	pos_form_cursor(form);
+	wrefresh(get_win(W_RIGHT));
 	return NULL;
 }
 
@@ -253,6 +313,7 @@ static void *decode(FORM *form)
 
 	form_driver(form, REQ_CLR_FIELD);
 	price_total += (info.price * info.qty);
+	before_dis = price_total;
 	cost_total += (info.cost * info.qty);
 	static int acc_num = ITEM_NUM;
 	
@@ -274,7 +335,7 @@ static void *decode(FORM *form)
 	/* store */
 	/* print_notice("%p", &info); */
 	stack_push(stk, &info);
-	sprintf(res[idx], "%-10s %d份  单价%4.1f  总价%5.1f", 
+	sprintf(res[idx], "%-12s %d份 单%4.1f 总%5.1f", 
 		info.name, info.qty, info.price, info.qty * info.price);
 	field_update(fields[TOTAL], price_total);
 	menu_update();
@@ -315,9 +376,8 @@ static void *discount(FORM *form, double data)
 {
 	disc = data;
 	data /= 10.0;
-	double after_dis = data * price_total;
-	field_update(fields[TOTAL], after_dis);
-	print_notice("折前%.1f，折后%.1f，实惠看得见！！", price_total, after_dis);
+	field_update(fields[TOTAL], price_total *= data);
+	print_notice("折前%.1f，折后%.1f，实惠看得见！！", before_dis, price_total);
 	return NULL;
 }
 
@@ -342,13 +402,15 @@ static void *charge(FORM *form, double data)
 
 static void *sure(FORM *form)
 {
-	if (stack_empty(stk)) {
+	if (!idx) {
 		print_notice("还没买菜就急着付钱。。。");
 		return NULL;
 	}
+#if 0
 	if (!price_total) {
 		print_notice("不给钱怎么确定。。。");
 	}
+#endif
 	/* update_table_menu(); */
 	update_table_bill();
 	list2file(res);
@@ -394,53 +456,6 @@ static void *menu_update()
 	return NULL;
 }
 
-static void *delete(MENU *menu)
-{
-	if (!idx) {
-		print_notice("已经退完了，不给再退了");
-		return NULL;
-	}
-	int i = item_index(current_item(menu));
-	int qty;
-	char sql[100];
-	struct elem *tmp;
-	if ((tmp = stack_get_one(stk, i)) == NULL) {
-		return NULL;
-	}
-	qty = tmp->qty;
-	sprintf(sql, 
-		"update menu set stocks = stocks %c %d, acc = acc %c %d \
-		 where id = %d",
-		plus, qty, mins, qty, tmp->id);
-	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
-
-	price_total -= (tmp->qty * tmp->price);
-	cost_total  -= (tmp->qty * tmp->cost);
-	/* fields reset */
-	field_update(fields[TOTAL], price_total);
-	wrefresh(get_win(W_RIGHT));
-	set_field_buffer(fields[DISCOUNT], 0, "");
-	set_field_buffer(fields[CHARGE], 0, "");
-	stack_delete_one(stk, i);
-
-	int current = i;
-	/* display reset */
-	while (*res[i + 1]) {
-		strcpy(res[i], res[i + 1]);	
-		++i;
-	}
-	*res[i] = '\0';
-	--idx;
-	menu_update();
-
-	/*-----------------------------------------------------------------------------
-	 *  menu_update() will generate a new menu, so current item will always be 
-	 *  the 1st,
-	 *  i don't want this, make it as if it was successive
-	 *-----------------------------------------------------------------------------*/
-	set_current_item(menu, items[current]);
-	return NULL;
-}
 
 /* just for clear all */
 static void *restore_table_menu()
@@ -477,29 +492,9 @@ static void *update_table_bill()
 	return NULL;
 }
 
-double get_price_total()
-{
-	return price_total;
-}
-
-double get_discount()
-{
-	return disc;
-}
-
-double get_receive_total()
-{
-	return receive_total;
-}
-
-double get_change()
-{
-	return change;
-}
-
 void *sales(MENU *mn)
 {
-	/* index 0 - income, 2 - outcome */
+	/* index: 0 - income, 2 - outcome */
 	in_out = item_index(current_item(mn));
 	if (in_out) {
 		plus = '-';
@@ -522,7 +517,7 @@ void *sales(MENU *mn)
 		set_field_back(fields[i], COLOR_PAIR(1));
 		set_field_just(fields[i], JUSTIFY_LEFT);
 		field_opts_off(fields[i], O_EDIT | O_AUTOSKIP);  	
-		/* field_opts_off(fields[i], O_ACTIVE);  	 */
+		/* field_opts_off(fields[i], O_ACTIVE); */
 	}
 	for (; i < FIELD_CNT - 1; ++i) {
 		/* 1 - precision */
@@ -595,5 +590,40 @@ void *sales(MENU *mn)
 	free_menu(menu);
 	free_widget(widget, (void **)fields, FIELD_CNT);
 	wrefresh(w_right);
+	return 0;
+}
+
+double get_price_total()
+{
+	return price_total;
+}
+
+double get_discount()
+{
+	return disc;
+}
+
+double get_before_dis()
+{
+	return before_dis;
+}
+
+double get_receive_total()
+{
+	return receive_total;
+}
+
+double get_change()
+{
+	return change;
+}
+
+static int any_more(FORM *form)
+{
+	if (!idx) {
+		print_notice("已经退完了，不给再退了");
+		pos_form_cursor(form);
+		return 1;
+	}
 	return 0;
 }

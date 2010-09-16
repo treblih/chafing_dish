@@ -21,7 +21,7 @@
 #include	"widget.h"
 
 #define		LEN		10
-#define		Y		23
+#define		Y		18
 #define		X		4
 
 /* event.c */
@@ -46,6 +46,7 @@ extern void *get_today_bills(MENU *);
 extern void *sales();
 extern double get_price_total();
 extern double get_discount();
+extern double get_before_dis();
 extern double get_receive_total();
 extern double get_change();
 

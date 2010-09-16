@@ -59,11 +59,13 @@ int interact(WIDGET *widget)
 				box(win, ACS_CKBOARD, ACS_CKBOARD);
 				wrefresh(win);
 			break;
-		case 0x7f:  /* Backspace */
+		case '-':  /* 0x2d */
 			if (f = widget->backspace)
 				f(wid);
 			break;
-		case 0x20 ... 0x7e: /* all printable chars */
+		/* all printable chars */
+		case 0x20 ... 0x2c: 
+		case 0x2e ... 0x7e:
 			if (f = widget->input)
 				f(wid, c);
 			break;

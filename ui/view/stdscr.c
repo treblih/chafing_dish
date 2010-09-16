@@ -25,15 +25,15 @@ static void *db_flush();
 int ui_init()
 {
 	pthread_t *pt1 = get_pthread_t(0);
-	pthread_t *pt2 = get_pthread_t(1);
+	/* pthread_t *pt2 = get_pthread_t(1); */
 	ncurses_init();
 	win_init();
 
 	pthread_create(pt1, NULL, statbar_init, NULL);
-	pthread_create(pt2, NULL, db_flush, NULL);
+	/* pthread_create(pt2, NULL, db_flush, NULL); */
 	main_menu();
 	pthread_cancel(*pt1);
-	pthread_cancel(*pt2);
+	/* pthread_cancel(*pt2); */
 
         return 0;
 }

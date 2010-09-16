@@ -184,7 +184,11 @@ void *list2file(char **list)
 	time[2] = '_';		/* 15:54 -> 15_54 */
 
 	/* open the file */
-	sprintf(path, "/home/hask/share/ch%s.txt", time);
+#ifdef WMJ
+	sprintf(path, "/home/wmj/ch/%s.txt", time);
+#else
+	sprintf(path, "/home/hask/share/%s.txt", time);
+#endif
 	FILE *fp = fopen(path, "a");
 	fprintf(stderr, "%d\r\n", errno);
 	perror("fopen");
@@ -195,8 +199,9 @@ void *list2file(char **list)
 	while (*list[i]) {
 		fprintf(fp, "%s\n", list[i++]);
 	}
-	fprintf(fp, "\n折扣：%5.1f\n", get_discount());
-	fprintf(fp,   "合计：%5.1f\n", get_price_total());
+	fprintf(fp, "\n折前：%5.1f\n", get_before_dis());
+	fprintf(fp,   "折扣：%5.1f\n", get_discount());
+	fprintf(fp,   "折后：%5.1f\n", get_price_total());
 	fprintf(fp,   "实收：%5.1f\n", get_receive_total());
 	fprintf(fp,   "找零：%5.1f\n", get_change());
 	fclose (fp);

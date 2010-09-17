@@ -142,7 +142,7 @@ static void *db_flush()
 		/* 3 cols -- sales/ cost/ profil */
 		int col_type[3] = { SELECT_DOUBLE, SELECT_DOUBLE, SELECT_DOUBLE };
 		char **res = db_select(get_db_main(), sql, 3, col_type);
-		struct daily_total *total = conclusion(res);
+		struct daily_total *total = conclusion(res, 0);
 		strncpy(monthly_last, bill_last, 7);
 		sprintf(sql, "insert into daily (date, month, count, sales, cost, profil) "
 			     "values ('%s', '%s', %d, %.1f, %.1f, %.1f)",
@@ -167,7 +167,7 @@ static void *db_flush()
 		int col_type[4] = { SELECT_DOUBLE, SELECT_DOUBLE, 
 			            SELECT_DOUBLE, SELECT_INT };
 		char **res = db_select(get_db_main(), sql, 4, col_type);
-		struct daily_total *total = conclusion(res);
+		struct daily_total *total = conclusion(res, 0);
 		sprintf(sql, "insert into monthly (month, count, sales, cost, profil) "
 			     "values ('%s', %d, %.1f, %.1f, %.1f)",
 			      bill_last,

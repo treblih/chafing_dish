@@ -45,14 +45,14 @@ static void *popular()
 {
 	return query_menu(20, 1, 
 		  "select id, name, acc from menu order by acc desc limit 20", 
-		   NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
+		   NULL, NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
 }
 
 static void *lack()
 {
 	return query_menu(20, 1, 
 	          "select id, name, stocks from menu order by stocks limit 20",
-	           NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
+	           NULL, NULL, 3, SELECT_INT, SELECT_TEXT, SELECT_INT);
 }
 
 static void *db_manager()

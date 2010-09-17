@@ -57,7 +57,7 @@ extern	void *list2file(char **);
 #define		PTHREAD_NUM	2
 extern	pthread_t *get_pthread_t(int);
 
-extern struct daily_total *conclusion(char **);
+extern struct daily_total *conclusion(char **, int);
 extern char * strcut(char *, int);
 
 #endif

@@ -18,6 +18,8 @@
 #include	"event.h"
 #include	"glue.h"
 
+#define		NEED_TIME	1
+
 void *get_today_bills(MENU *menu)
 {
 	int i = item_index(current_item(menu));
@@ -27,12 +29,12 @@ void *get_today_bills(MENU *menu)
 	/* i == 0 => ADMIN invocation */
 	if (i) {
 		sprintf(sql, "select time, sales from bill where date = '%s'", date);
-		query_menu(2, 6, sql, NULL, 2, SELECT_TEXT, SELECT_DOUBLE);
+		query_menu(2, 6, sql, NULL, NULL, 2, SELECT_TEXT, SELECT_DOUBLE);
 	} else {
 		sprintf(sql, 
 		       "select time, sales, cost, profil from bill where date = '%s'", 
 		        date);
-		query_menu(10, 3, sql, (FUNCP)conclusion, 4, 
+		query_menu(10, 3, sql, (FUNCP)conclusion, (void *)NEED_TIME, 4, 
 			  SELECT_TEXT, 
 			  SELECT_DOUBLE,
 			  SELECT_DOUBLE,

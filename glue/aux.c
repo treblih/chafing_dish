@@ -213,7 +213,7 @@ pthread_t *get_pthread_t(int idx)
 	return &pt[idx];
 }
 
-struct daily_total *conclusion(char **bill_list)
+struct daily_total *conclusion(char **bill_list, int need_time)
 {
 	int i = 0;
 	int cnt = 0;
@@ -230,11 +230,17 @@ struct daily_total *conclusion(char **bill_list)
 		strcpy(res, bill_list[i++]);
 		/* strtok_r(res, " ", separate); */
 		strdelim(res, ' ', separate);
-		price_total  += atof(separate[0]);
-		cost_total   += atof(separate[1]);
-		profil_total += atof(separate[2]);
-		if (*separate[3]) {
-			cnt += atoi(separate[3]);
+		if (need_time) {
+			price_total  += atof(separate[1]);
+			cost_total   += atof(separate[2]);
+			profil_total += atof(separate[3]);
+		} else {
+			price_total  += atof(separate[0]);
+			cost_total   += atof(separate[1]);
+			profil_total += atof(separate[2]);
+			if (*separate[3]) {
+				cnt += atoi(separate[3]);
+			}
 		}
 	}
 	total.cnt = (cnt ? cnt : get_sql_item_cnt());

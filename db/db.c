@@ -73,7 +73,7 @@ char **db_select(sqlite3 *handle, char *sql, int col, int *col_type)
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
                 fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
 			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
-		longjmp(*get_jmp_buf(), 1);
+		/* longjmp(*get_jmp_buf(), 1); */
         }
 
 	/*-----------------------------------------------------------------------------
@@ -149,7 +149,7 @@ void *db_select_1_row(sqlite3 *handle, char *sql, int col, ...)
         if (sqlite3_prepare_v2(handle, sql, -1, &stmt, 0)) {
                 fprintf(stderr, "file: %s  func: %s  line: %d\n%s\n", 
 			__FILE__, __func__, __LINE__, sqlite3_errmsg(handle));
-		longjmp(*get_jmp_buf(), 1);
+		/* longjmp(*get_jmp_buf(), 1); */
         }
 	if (sqlite3_step(stmt) == SQLITE_DONE) {
 		goto end;

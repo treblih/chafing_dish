@@ -21,9 +21,9 @@
 int main()
 {
 	db_init();
-	if (!setjmp(*get_jmp_buf())) {
+	/* if (!setjmp(*get_jmp_buf())) { */
 		ui_init();
-	}
+	/* } */
 	ui_close();
 	close_db_main();
 	return EXIT_SUCCESS;

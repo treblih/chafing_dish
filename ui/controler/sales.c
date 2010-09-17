@@ -255,10 +255,10 @@ static void *clr_core(struct elem *del)
 	disc = 0.0;
 	receive_total = 0.0;
 	change = 0.0;
+	before_dis -= (del->qty * del->price);
 	price_total = before_dis;
-
-	price_total -= (del->qty * del->price);
 	cost_total  -= (del->qty * del->cost);
+
 	/* fields reset */
 	field_update(fields[TOTAL], price_total);
 	set_field_buffer(fields[DISCOUNT], 0, "");
@@ -312,8 +312,8 @@ static void *decode(FORM *form)
 	sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 
 	form_driver(form, REQ_CLR_FIELD);
-	price_total += (info.price * info.qty);
-	before_dis = price_total;
+	before_dis += (info.price * info.qty);
+	price_total = before_dis;
 	cost_total += (info.cost * info.qty);
 	static int acc_num = ITEM_NUM;
 	
@@ -406,11 +406,7 @@ static void *sure(FORM *form)
 		print_notice("还没买菜就急着付钱。。。");
 		return NULL;
 	}
-#if 0
-	if (!price_total) {
-		print_notice("不给钱怎么确定。。。");
-	}
-#endif
+
 	/* update_table_menu(); */
 	update_table_bill();
 	list2file(res);

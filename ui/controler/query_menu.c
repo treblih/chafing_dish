@@ -39,11 +39,13 @@ void *query_menu(int x, int format_x, char *sql, FUNCP callback, int col, ...)
 
 	if (callback) {
 		struct daily_total *total = (struct daily_total *)callback(res);
-		print_notice("共%d笔生意 总收入%.1f 总成本%.1f 总盈利%.1f", 
+		print_notice("今日截止目前共%d笔生意  总收入%.1f  总成本%.1f  总盈利%.1f\n" 
+			     "平均每桌盈利%.1f",
 			     total->cnt,
 			     total->sales,
 			     total->cost,
-			     total->profil);
+			     total->profil,
+			     total->profil / total->cnt);
 	}
 
 	mt.x = x;

@@ -31,6 +31,7 @@ int ui_init()
 
 	pthread_create(pt1, NULL, statbar_init, NULL);
 	/* pthread_create(pt2, NULL, db_flush, NULL); */
+	db_flush();
 	main_menu();
 	pthread_cancel(*pt1);
 	/* pthread_cancel(*pt2); */
@@ -108,64 +109,68 @@ static void *statbar_init()
 static void *db_flush()
 {
 	/* pthread, use vars in local */
-	char date_today[11]       = { 0 };	/* 03/01 */
-	char date_bill_last[11]   = { 0 };	/* 02/27 */
-	char date_daily_last[11]  = { 0 };	/* 02/28 */
-	char date_monthly_last[8] = { 0 };	/* 01    */
+	char today[11]       = { 0 };	/* 03/01 */
+	char bill_last[11]   = { 0 };	/* 02/27 */
+	char daily_last[11]  = { 0 };	/* 02/28 */
+	char monthly_last[8] = { 0 };	/* 01    */
 	char sql[100] 		  = { 0 };
-	/* date_today = get_date_time(GET_DATE); */
-	strncpy(date_today, get_date_time(GET_DATE), 10);
+	/* today = get_date_time(GET_DATE); */
+	strncpy(today, get_date_time(GET_DATE), 10);
 
 	db_select_1_row(get_db_main(),
 			"select date from bill order by date desc limit 1",
-			1, SELECT_TEXT, date_bill_last);
+			1, SELECT_TEXT, bill_last);
 	db_select_1_row(get_db_main(),
 			"select date from daily order by date desc limit 1",
-			1, SELECT_TEXT, date_daily_last);
+			1, SELECT_TEXT, daily_last);
+#if 0
 	db_select_1_row(get_db_main(),
 			"select date from monthly order by date desc limit 1",
-			1, SELECT_TEXT, date_monthly_last);
+			1, SELECT_TEXT, monthly_last);
+#endif
 
 	/*-----------------------------------------------------------------------------
 	 *  [9] means the last one in '2010/02/28'
 	 *  if no cmp with daily_last & bill_last,
 	 *  the same daily conclusion will add to table daily alot of times
 	 *-----------------------------------------------------------------------------*/
-	if ((date_today[9]      != date_bill_last[9]) &&
-	    (date_daily_last[9] != date_bill_last[9])) {
+	if ((today[9]      != bill_last[9]) &&
+	    (daily_last[9] != bill_last[9])) {
 		sprintf(sql, "select sales, cost, profil from bill where date = '%s'", 
-			date_bill_last);
+			bill_last);
 
 		/* 3 cols -- sales/ cost/ profil */
 		int col_type[3] = { SELECT_DOUBLE, SELECT_DOUBLE, SELECT_DOUBLE };
 		char **res = db_select(get_db_main(), sql, 3, col_type);
 		struct daily_total *total = conclusion(res);
-		sprintf(sql, "insert into daily (date, date_month, count, sales, cost, profil) "
+		strncpy(monthly_last, bill_last, 7);
+		sprintf(sql, "insert into daily (date, month, count, sales, cost, profil) "
 			     "values ('%s', '%s', %d, %.1f, %.1f, %.1f)",
-			      date_bill_last,
-			      /* 2010/02/28 -> 2010/02 */
-			      strcut(date_bill_last, 7),
+			      /* 2010/02/28 */
+			      bill_last,
+			      /* 2010/02 */
+			      monthly_last,
 			      total->cnt,
 			      total->sales,
 			      total->cost,
 			      total->profil);
 		sqlite3_exec(get_db_main(), sql, 0, 0, 0);
 	}
-	if (date_today[9] == '1' && 
-	    date_daily_last[6] != date_monthly_last[6]) {
+	if (today[9] == '1' && 
+	    daily_last[6] != monthly_last[6]) {
 		sprintf(sql, "select sales, cost, profil, count from daily "
-			     "where date_month = '%s'", 
+			     "where month = '%s'", 
 			/* has been 2010/02 */
-			date_bill_last);
+			bill_last);
 
 		/* 3 cols -- sales/ cost/ profil */
 		int col_type[4] = { SELECT_DOUBLE, SELECT_DOUBLE, 
 			            SELECT_DOUBLE, SELECT_INT };
 		char **res = db_select(get_db_main(), sql, 4, col_type);
 		struct daily_total *total = conclusion(res);
-		sprintf(sql, "insert into monthly (date_month, count, sales, cost, profil) "
+		sprintf(sql, "insert into monthly (month, count, sales, cost, profil) "
 			     "values ('%s', %d, %.1f, %.1f, %.1f)",
-			      date_bill_last,
+			      bill_last,
 			      total->cnt,
 			      total->sales,
 			      total->cost,

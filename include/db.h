@@ -40,5 +40,6 @@ extern	int db_init(const char *, sqlite3 **);
 extern	sqlite3 *get_db_main();
 extern	void close_db_main();
 #define		db_init()	get_db_main()
+extern	void *db_flush();
 
 #endif

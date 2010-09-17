@@ -130,7 +130,7 @@ extern int ncurses_init(void);
 
 /* widget.c */
 extern WIDGET *widget_init(WINDOW *, void *, FUNCP, FUNCP, FUNCP, 
-		                             FUNCP *, int);
+		           FUNCP *, int);
 extern int free_widget(WIDGET *, void **, int);
 
 /* win.c */
@@ -138,6 +138,6 @@ extern int win_init(void);
 extern int win_dstr(void);
 extern WINDOW *get_win(int);
 extern int print_notice(const char *, ...);
-
+extern void *statbar_init();
 
 #endif

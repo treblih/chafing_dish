@@ -58,7 +58,7 @@ typedef struct menu_t {
 } menu_t;
 
 
-enum WIN_LAYOUT {
+enum {
 	W_LEFT,
 	W_RIGHT,
 	W_MID,
@@ -66,7 +66,7 @@ enum WIN_LAYOUT {
 	W_NOTICE
 };
 
-enum DIRECTION {
+enum {
 	D_LEFT = 1,
 	D_RIGHT,
 	D_UP,

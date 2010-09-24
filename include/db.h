@@ -27,7 +27,7 @@
 #define		CHAFING_DB	"chafing.db"
 
 	/* for db_select */
-enum SELECT {
+enum {
 	SELECT_INT,
 	SELECT_DOUBLE,
 	SELECT_TEXT	

@@ -121,8 +121,8 @@ void *stack_delete_one(stack_t *stk, int idx)
 void stack_free(stack_t *stk)
 {
 	free(stk->head);
-	free(stk);
 	stk->head = stk->tail = stk->ptr = NULL;
+	free(stk);
 }
 
 void stack_reset(stack_t *stk)

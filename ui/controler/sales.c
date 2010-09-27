@@ -20,7 +20,7 @@
 #include	"stack.h"
 
 #define		FIELD_CNT	8
-#define		SURE_INVOCATION 1014
+#define		SURE_INVOCATION 19881014
 
 enum FIELDS {
 	CLR_ALL,
@@ -138,6 +138,7 @@ static void *clr_all(FORM *form, int is_sure)
 		/* user invocation */
 		restore_table_menu();
 	}
+	int tmp = idx;
 	for (; idx;) {
 		*res[--idx] = '\0';
 	}
@@ -149,13 +150,6 @@ static void *clr_all(FORM *form, int is_sure)
 
 	/* display reset */
 	menu_update();
-
-	/* if invocated clr_any(), widget_bill would be set */
-	if (widget_bill) {
-		/* free, including menu/items */
-		free_widget(widget_bill, (void **)items, idx);
-		widget_bill = NULL;
-	}
 	set_current_field(form, fields[DECODE]);
 	/* pos_form_cursor(form); */
 	var_reset();
@@ -172,6 +166,7 @@ static void *clr_all(FORM *form, int is_sure)
  */
 static void *clr_any(FORM *form)
 {
+	/* free in sales */
 	widget_bill = widget_init(get_win(W_MID), menu,
 			     (FUNCP)unpost_menu, 
 			     (FUNCP)free_menu,
@@ -190,11 +185,13 @@ static void *clr_one(FORM *form)
 	if (any_more(form)) {
 		return NULL;
 	}
-	*res[--idx] = '\0';
+	/* not [--idx], for the sake of distinguish in menu_update() */
+	*res[idx] = '\0';
 	clr_core(stack_pop(stk));
 
 	/* display reset */
 	menu_update();
+	--idx;
 	pos_form_cursor(form);	/* back focus to form of w_right */
 	return NULL;
 }
@@ -338,13 +335,15 @@ static void *decode(FORM *form)
 	sprintf(res[idx], "%-12s %d份 单%4.1f 总%5.1f", 
 		info.name, info.qty, info.price, info.qty * info.price);
 	field_update(fields[TOTAL], price_total);
+	set_field_buffer(fields[DISCOUNT], 0, "");
+	set_field_buffer(fields[CHARGE], 0, "");
+	++idx;
 	menu_update();
 
 	/*-----------------------------------------------------------------------------
 	 * name is static, make *name == NUL
 	 * see if (!*name)
 	 *-----------------------------------------------------------------------------*/
-	++idx;
 	info.name[0] = '\0';
 	return NULL;
 }
@@ -428,21 +427,60 @@ static void *field_update(FIELD *field, double x)
  * ===  FUNCTION  ======================================================================
  *         Name:  menu_update
  *  Description:  1 time 1 item
+ *  		  idx == idx_old + 1	decode()
+ *  		  idx == idx_old	clr_one()
+ *  		  idx == idx_old - 1	delete() -- by clr_any()
+ *  		  idx == 0		clr_all()
  * =====================================================================================
  */
 static void *menu_update()
 {
+	static int idx_old;
+	int i;
+	WINDOW *w_mid = get_win(W_MID);
 	/* update menu in the mid window */
-	if (menu) {
+	if (idx_old) {
 		unpost_menu(menu);
 		free_menu(menu);
+		/* clr_all() */
+		if (!idx) {
+			for (i = 0; i < idx_old; i++) {
+				free_item(items[i]);
+				items[i] = NULL;
+			}
+			wrefresh(w_mid);
+			idx_old = idx;
+			return NULL;
+		}
 	}
-	items[idx] = new_item(res[idx], NULL);
-	set_item_userptr(items[idx], delete);
+	/* add a new, idx == idx_old + 1 */
+	if (idx > idx_old) {
+		/* idx 1~n, decl */
+		items[idx - 1] = new_item(res[idx - 1], NULL);
+		set_item_userptr(items[idx - 1], delete);
+	/* clr_one() */
+	} else if (idx == idx_old) {
+		/* idx 1~n, decl */
+		free_item(items[idx - 1]);
+		items[idx - 1] = NULL;
+		--idx_old;
+		goto update;
+	/* clr_any() */
+	} else if (idx < idx_old) {
+		for (i = 0; i < idx_old; i++) {
+			free_item(items[i]);
+			items[i] = NULL;
+		}
+		for (i = 0; i < idx; i++) {
+			items[i] = new_item(res[i], NULL);
+			set_item_userptr(items[i], delete);
+		}
+	}
+
+	idx_old = idx;
+update:
         menu = new_menu(items);
         menu_opts_off(menu, O_ROWMAJOR | O_SHOWDESC);
-
-	WINDOW *w_mid = get_win(W_MID);
         set_menu_win(menu, w_mid);
         set_menu_sub(menu, derwin(w_mid, 0, 0, 1, 25));
         set_menu_format(menu, LINES - 3, 1);
@@ -585,6 +623,13 @@ void *sales(MENU *mn)
 	}
 	free_menu(menu);
 	free_widget(widget, (void **)fields, FIELD_CNT);
+	/* if invocated clr_any(), widget_bill would be set */
+	if (widget_bill) {
+		/* don't use free_widget 
+		 * because it frees a lot more which have been freed above */
+		free(widget_bill);
+		widget_bill = NULL;
+	}
 	wrefresh(w_right);
 	return 0;
 }
@@ -618,6 +663,9 @@ static int any_more(FORM *form)
 {
 	if (!idx) {
 		print_notice("已经退完了，不给再退了");
+		set_field_buffer(fields[DISCOUNT], 0, "");
+		set_field_buffer(fields[TOTAL], 0, "");
+		set_field_buffer(fields[CHARGE], 0, "");
 		pos_form_cursor(form);
 		return 1;
 	}

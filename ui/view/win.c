@@ -98,4 +98,5 @@ void *statbar_init()
 		wrefresh(w_status);
 		sleep(60);
 	}
+	pthread_exit(NULL);
 }

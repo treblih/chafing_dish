@@ -31,8 +31,6 @@ int ui_init()
 	pthread_create(pt1, NULL, statbar_init, NULL);
 	pthread_create(pt2, NULL, db_flush, NULL);
 	main_menu();
-	pthread_cancel(*pt1);
-	pthread_cancel(*pt2);
 
         return 0;
 }

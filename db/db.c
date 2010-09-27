@@ -15,7 +15,8 @@
  * =====================================================================================
  */
 
-#include	"glue.h"
+#include <pthread.h>
+#include "glue.h"
 
 static int init(const char *, sqlite3 **);
 
@@ -275,4 +276,5 @@ void *db_flush()
 		}
 	}
 	return NULL;
+	pthread_exit(NULL);
 }

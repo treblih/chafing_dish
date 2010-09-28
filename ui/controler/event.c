@@ -27,7 +27,7 @@ int interact(WIDGET *widget)
 
 	box(win, ACS_CKBOARD, ACS_CKBOARD);
         wrefresh(win);
-        while ((c = wgetch(win)) != '/') {
+        while ((c = wgetch(win)) != '\') {
                 switch (c) {
 		case KEY_LEFT:
 			if (f = widget->direct)

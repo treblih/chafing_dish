@@ -46,11 +46,10 @@ int free_widget(WIDGET *widget, void **elems, int cnt)
         widget->unpost(wid);
         for (int i = 0; i < cnt; ++i) {
 		widget->free_elem(elems[i]);
+		elems[i] = NULL;
         }
 	widget->free_set(wid);
 	free(elems);
 	free(widget);
-	elems = NULL;
-	widget = NULL;
 	return 0;
 }

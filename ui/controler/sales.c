@@ -292,14 +292,14 @@ static void *decode(FORM *form)
 			 SELECT_DOUBLE, &info.cost,
 			 SELECT_INT, &info.stocks);
 	if (!*info.name) {
-		print_notice("没有代号为%d的菜，请检查输入", info.id);
+		print_notice(" 没有代号为%d的菜，请检查输入", info.id);
 		form_driver(form, REQ_CLR_FIELD);
 		return NULL;
 	}
 	/* WARNING, maybe not enough */
 	if (info.stocks < info.qty) {
-		print_notice("强烈警告，%s库存仅%d份，可能不够！\n"
-			     "可能是数据未及时更新，所以我不会否决该笔交易", 
+		print_notice(" 强烈警告，%s库存仅%d份，可能不够！\n"
+			     " 可能是数据未及时更新，所以我不会否决该笔交易", 
 			     info.name, info.stocks);	
 	}
 	sprintf(sql, 
@@ -373,10 +373,16 @@ static void *input_core(FORM *form, FUNCP callback)
 
 static void *discount(FORM *form, double data)
 {
+	int check = data;
+	if (check > 10 || data < 5) {
+		print_notice(" 不可高于10折或低于5折");
+		return NULL;
+	}
 	disc = data;
 	data /= 10.0;
-	field_update(fields[TOTAL], price_total *= data);
-	print_notice("折前%.1f，折后%.1f，实惠看得见！！", before_dis, price_total);
+	price_total = before_dis * data;
+	field_update(fields[TOTAL], price_total);
+	print_notice(" 折前%.1f，折后%.1f，实惠看得见！！", before_dis, price_total);
 	return NULL;
 }
 
@@ -389,20 +395,20 @@ static void *total(FORM *form, double data)
 static void *charge(FORM *form, double data)
 {
 	if (data < price_total)	 {
-		print_notice("他给的钱不够。。。");
+		print_notice(" 他给的钱不够。。。");
 		form_driver(form, REQ_CLR_FIELD);
 		return (void *)1;
 	}
 	receive_total = data;
 	change        = data - price_total;
-	print_notice("找零%.1f", change);
+	print_notice(" 找零%.1f", change);
 	return NULL;
 }
 
 static void *sure(FORM *form)
 {
 	if (!idx) {
-		print_notice("还没买菜就急着付钱。。。");
+		print_notice(" 还没买菜就急着付钱。。。");
 		return NULL;
 	}
 
@@ -662,7 +668,7 @@ double get_change()
 static int any_more(FORM *form)
 {
 	if (!idx) {
-		print_notice("已经退完了，不给再退了");
+		print_notice(" 已经退完了，不给再退了");
 		set_field_buffer(fields[DISCOUNT], 0, "");
 		set_field_buffer(fields[TOTAL], 0, "");
 		set_field_buffer(fields[CHARGE], 0, "");

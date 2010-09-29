@@ -332,7 +332,7 @@ static void *decode(FORM *form)
 	/* store */
 	/* print_notice("%p", &info); */
 	stack_push(stk, &info);
-	sprintf(res[idx], "%d份 单%4.1f 总%5.1f   %16s", 
+	sprintf(res[idx], "%d份 单%4.1f 总%5.1f  %-16s", 
 		info.qty, info.price, info.qty * info.price, info.name);
 	field_update(fields[TOTAL], price_total);
 	set_field_buffer(fields[DISCOUNT], 0, "");

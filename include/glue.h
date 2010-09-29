@@ -31,7 +31,7 @@ struct daily_total {
 
 #define		PTR_SIZE	sizeof (char *)
 #define		STR_LEN		64
-#define		ITEM_NUM	32
+#define		ITEM_NUM	64
 #define		ITEM_SIZE	(PTR_SIZE + STR_LEN)
 #define		ITEM_BYTE	(ITEM_SIZE * ITEM_NUM)
 

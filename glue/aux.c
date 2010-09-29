@@ -65,7 +65,7 @@ char *get_date_time(int req)
 		return date;
 	case GET_TIME:
 		sprintf(hm, "%.2d:%.2d",
-			p->tm_hour,
+			p->tm_hour + 8,
 			p->tm_min);
 		return hm;
 	case GET_WDAY:

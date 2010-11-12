@@ -1,5 +1,5 @@
 CC	:=	gcc
-CFLAGS	:=	-std=gnu99 -g -c -I include/
+CFLAGS	:=	-std=gnu99 -g -c -I include/ -O2
 LD	:=	ld
 LIBS	:=	-lpthread -lncursesw -lmenuw -lformw -lsqlite3 
 LOADER	:=	-dynamic-linker /lib/ld-linux.so.2

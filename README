@@ -1,3 +1,23 @@
-每decode更新acc/stocks
-sure只是根据各种total更新bill
-stk/info存在是为了记录点菜历史状态方便退订
+remind me:
+
+5 windows, left/mid/right/status/notice
+
+1 thread to get time and flush status bar every 60 sec
+
+mainly 2 abstraction
+    WIDGET <- menu/form
+    menu_t <- menu attributes
+
+only 1 interact()
+
+widget->direct widget->enter, kinda OO
+
+wgetch/menu_driver/form_driver/item_userptr/field_userptr, lib func
+
+wgetch -> interact -> direct/enter -> driver/userptr
+
+stack to store bill items for the sake of unsubscription
+
+every decode() updates acc/stocks fields in db
+
+sure() just updates table bill according to all TOTALs

@@ -10,7 +10,7 @@ mainly 2 abstraction
 
 only 1 interact()
 
-widget->direct widget->enter, kinda OO
+widget->direct widget->enter, kinda OO like vfs
 
 wgetch/menu_driver/form_driver/item_userptr/field_userptr, lib func
 
